@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DRAXTER</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-navy: #0f172a;
+            --card-navy: #1e293b;
+            --accent-blue: #0DCAF0;
+            --draxter-red: #ef4444;
+            --text-main: #f1f5f9;
+        }
+        body { background-color: var(--bg-navy); color: var(--text-main); font-family: 'Segoe UI', sans-serif; }
+        .card { background-color: var(--card-navy); border: 1px solid #334155; color: var(--text-main); }
+        .table { color: var(--text-main); border-color: #334155; }
+        .table-dark { --bs-table-bg: #0f172a; }
+        .filter-input { background: #334155; border: 1px solid #475569; color: white; font-size: 0.8rem; border-radius: 4px; padding: 2px 5px; width: 100%; }
+        
+        /* Buttons */
+        .btn-export-navy { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; font-weight: bold; }
+        .btn-export-navy:hover { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; }
+        .btn-upload-cyan { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; border: 1px solid var(--accent-blue) !important; font-weight: 800; text-transform: uppercase; transition: all 0.2s ease; }
+        .btn-upload-cyan:hover { background-color: transparent !important; color: var(--accent-blue) !important; box-shadow: 0 0 10px var(--accent-blue); }
+        .btn-cmd-gen { background-color: var(--draxter-red) !important; color: var(--bg-navy) !important; font-weight: 800; border: none; text-transform: uppercase; }
+        .btn-cmd-gen:hover { background-color: #dc2626 !important; transform: scale(1.02); }
+        .btn-delete { color: #ff4d4d; cursor: pointer; border: none; background: none; transition: 0.2s; }
+        .btn-delete:hover { color: #ff0000; transform: scale(1.2); }
+        .btn-navy-modal { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; font-weight: bold; }
+        .btn-navy-modal:hover { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; }
+
+        /* DataTables Styling */
+        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_info { padding: 0 1%; color: var(--accent-blue) !important; font-size: 0.85rem; opacity: 0.8; text-align: right; float: none !important; }
+        .dataTables_length select { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; border-radius: 4px; padding: 2px; }
+        .dataTables_wrapper .dataTables_paginate { display: flex; justify-content: center; margin: 15px 0 20px 0 !important; float: none !important; }
+        .page-link { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; font-weight: bold; }
+        .page-item.active .page-link { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; border-color: var(--accent-blue) !important; }
+        .page-link:hover { background-color: rgba(13, 202, 240, 0.2) !important; color: white !important; }
+
+        /* Form Controls */
+        #currProj, #currSub, .custom-file-input { background-color: var(--bg-navy) !important; color: white !important; border: 1px solid var(--accent-blue) !important; transition: all 0.2s; }
+        .form-control-sm:focus { box-shadow: 0 0 8px rgba(13, 202, 240, 0.4) !important; border-color: var(--accent-blue) !important; outline: none; }
+        input::placeholder { color: rgba(255, 255, 255, 0.3) !important; }
+        .custom-file-input::file-selector-button { background-color: var(--bg-navy); color: var(--accent-blue); border: none; border-right: 1px solid var(--accent-blue); padding: 0.2rem 0.75rem; margin-right: 10px; font-weight: bold; }
+        .custom-file-input::file-selector-button:hover { background-color: var(--accent-blue); color: var(--bg-navy); cursor: pointer; }
+
+        /* Components */
+        .logo-header { max-height: 65px; margin-bottom: 20px; }
+        .editable-note { background: #0f172a; border: 1px solid #475569; padding: 5px; min-width: 150px; border-radius: 4px; }
+        .sticky-filter-row { background: var(--card-navy); position: sticky; top: 0; z-index: 10; }
+        .command-box { background: #000; color: #00ff00; padding: 15px; border-radius: 5px; font-family: 'Fira Code', monospace; }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        .draxter-toast { background-color: var(--card-navy); color: var(--text-main); border-left: 4px solid var(--accent-blue); min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        .footer-logo { height: 24px; width: auto; object-fit: contain; filter: drop-shadow(0 0 2px var(--accent-blue)); }
+    </style>
+</head>
+<body class="p-4">
+
+<div class="container-fluid text-center">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="draxter Logo" class="logo-header">
+</div>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between mb-3 align-items-center">
+        <h4 class="text-white"></h4>
+        <div>
+            <a href="/browse" class="btn btn-export-navy btn-sm me-2"><i class="bi bi-folder2-open"></i></a>
+            <a href="/logout" class="btn btn-outline-danger btn-sm">LOGOUT</a>
+        </div>
+    </div>
+
+    <div class="card p-3 mb-4 shadow-lg">
+        <form action="/upload" method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="small fw-bold opacity-75 text-uppercase" style="color: var(--accent-blue);">Project</label>
+                <input type="text" name="project" id="currProj" class="form-control form-control-sm" placeholder="CLIENT-01" required>
+            </div>
+            <div class="col-md-2">
+                <label class="small fw-bold opacity-75 text-uppercase" style="color: var(--accent-blue);">Subproject</label>
+                <input type="text" name="subproject" id="currSub" class="form-control form-control-sm" placeholder="EXTERNAL" required>
+            </div>
+            <div class="col-md-5">
+                <label class="bi bi-folder2-open small fw-bold opacity-75" style="color: var(--accent-blue);"> Nmap XML Input</label>
+                <input type="file" name="files[]" id="fileInput" class="form-control custom-file-input form-control-sm" multiple required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-upload-cyan btn-sm w-100">UPLOAD & PARSE</button>
+            </div>
+        </form>
+        
+        <div class="mt-3 d-flex gap-2">
+            <div class="btn-group">
+                <button class="btn btn-export-navy btn-sm dropdown-toggle" data-bs-toggle="dropdown">EXPORT</button>
+                <ul class="dropdown-menu dropdown-menu-dark shadow">
+                    <li><a class="dropdown-item" href="#" onclick="saveTargets('ip')">IP Address Format [.txt]</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" onclick="saveTargets('url')">HTTP(S) Format [.txt]</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#xlsxModal">Excel Spreadsheet (XLSX)</a></li>
+                </ul>
+            </div>
+            <button class="btn btn-cmd-gen btn-sm" onclick="generateCmd()">
+                <i class="bi bi-terminal-fill me-1"></i> COMMAND 
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-lg overflow-hidden">
+        <table id="scanTable" class="table table-dark table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 35px;"><input type="checkbox" id="selectAll"></th>
+                    <th>PROJECT</th><th>SUBPROJECT</th><th>IP ADDRESS</th><th>OS</th><th>PORT</th><th>PROTO</th><th>SERVICE</th><th>NOTES</th>
+                    <th style="width: 50px;"><i class="bi bi-trash"></i></th>
+                </tr>
+                <tr class="sticky-filter-row">
+                    <th></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input" placeholder="Regex ^ $"></th>
+                    <th><input type="text" class="filter-input" placeholder="OS"></th>
+                    <th><input type="text" class="filter-input" id="portFilter" placeholder="Port"></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input" placeholder="Search Notes..."></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in scan_data %}
+                <tr id="row-{{row.id}}" data-ip="{{row.ip}}" data-port="{{row.port}}" data-service="{{row.service}}">
+                    <td><input type="checkbox" class="row-check"></td>
+                    <td>{{row.project}}</td>
+                    <td><small>{{row.subproject}}</small></td>
+                    <td class="text-info fw-bold">{{row.ip}}</td>
+                    <td class="text-white-50 small"><i class="bi bi-cpu"></i> {{ row.os if row.os else 'Unknown' }}</td>
+                    <td><span class="badge bg-secondary">{{row.port}}</span></td>
+                    <td>{{row.protocol}}</td>
+                    <td>
+                        <a href="https://duckduckgo.com/?q={{row.port}}+{{row.protocol}}+(pentest|hacking|exploit)" target="_blank" class="text-decoration-none">
+                            <span class="badge bg-secondary"><i class="bi bi-search" style="font-size: 0.7rem;"></i> {{row.service}}</span>
+                        </a>
+                    </td>
+                    <td contenteditable="true" class="editable-note" data-id="{{row.id}}">{{row.note}}</td>
+                    <td><button class="btn-delete" onclick="deleteRow({{row.id}})"><i class="bi bi-x-circle-fill"></i></button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="xlsxModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary"><h5>Excel Export Configuration</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="groupIPCheck"><label class="form-check-label">Unite services per IP</label></div>
+                <div class="row px-2">
+                    <div class="col-6"><input type="checkbox" class="col-chk" value="ip" checked> IP</div>
+                    <div class="col-6"><input type="checkbox" class="col-chk" value="os" checked> OS</div>
+                    <div class="col-6"><input type="checkbox" class="col-chk" value="port" checked> Port</div>
+                    <div class="col-6"><input type="checkbox" class="col-chk" value="service" checked> Service</div>
+                    <div class="col-6"><input type="checkbox" class="col-chk" value="note" checked> Note</div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary"><button class="btn btn-navy-modal w-100" onclick="processXlsx()">GENERATE XLSX</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cmdModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary"><h5>CLI Integration</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <select id="toolType" class="form-select bg-secondary text-white border-0 mb-3" onchange="updateCmd()">
+                    <option value="gowitness">Gowitness (Screenshots)</option>
+                    <option value="nxc_rdp">NXC RDP (Screenshots)</option>
+                    <option value="nxc_smb">NXC SMB (Shares)</option>
+                    <option value="nxc_wmi">NXC WMI</option>
+                    <option value="nxc_ftp">NXC FTP</option>
+                    <option value="nxc_ssh">NXC SSH</option>
+                    <option value="nxc_vnc">NXC VNC</option>
+                    <option value="nxc_winrm">NXC WinRM</option>
+                    <option value="nxc_nfs">NXC NFS</option>
+                    <option value="nxc_mssql">NXC MSSQL</option>
+                    <option value="nxc_ldap">NXC LDAP</option>
+                </select>
+                <div class="command-box d-flex justify-content-between align-items-start">
+                    <span id="cmdText" style="word-break: break-all;"></span>
+                    <button class="btn btn-sm btn-outline-info ms-2" onclick="copyCmd()"><i class="bi bi-clipboard"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastPlacement"></div>
+
+<footer class="text-center pb-5">
+    <hr class="mt-5 mb-4" style="border-top: 1px solid rgba(13, 202, 240, 0.2);">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <span class="text-secondary small text-uppercase">Idea by</span>
+        <img src="{{ url_for('static', filename='Dracsec.png') }}" class="footer-logo" alt="Dracsec">
+        <span class="text-secondary small">●</span>
+        <span class="text-secondary small text-uppercase">Made by</span>
+        <img src="{{ url_for('static', filename='Gemini.png') }}" class="footer-logo" alt="Gemini">
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+let table;
+$(document).ready(function() {
+    table = $('#scanTable').DataTable({ dom: 'lrtip', pageLength: 50, columnDefs: [{ targets: [0, 9], orderable: false }] });
+
+    $('#scanTable thead .sticky-filter-row th').each(function(i) {
+        $('input', this).on('keyup change clear', function() {
+            if (table.column(i).search() !== this.value) table.column(i).search(this.value, true, false).draw();
+        });
+    });
+
+    $('#selectAll').click(function() { $('input.row-check', table.rows({search:'applied'}).nodes()).prop('checked', this.checked); });
+    $(document).on('blur', '.editable-note', function() {
+        fetch('/update_note', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:$(this).data('id'), note:$(this).text()}) });
+    });
+});
+
+function showToast(title, message) {
+    const id = Date.now();
+    $('#toastPlacement').append(`<div id="toast-${id}" class="toast draxter-toast show p-3 mb-2"><div class="d-flex justify-content-between"><strong class="text-info">${title}</strong><button class="btn-close btn-close-white" onclick="$('#toast-${id}').remove()"></button></div><div class="toast-body">${message}</div></div>`);
+    setTimeout(() => { $(`#toast-${id}`).fadeOut(500, function() { $(this).remove(); }); }, 4000);
+}
+
+function getTableContext() {
+    const firstRow = document.querySelector('#scanTable tbody tr');
+    if (!firstRow) return { p: null, s: null };
+    return { 
+        p: firstRow.cells[1].innerText.trim(), 
+        s: firstRow.cells[2].innerText.trim() 
+    };
+}
+
+function getRows() {
+    let checked = table.rows({search:'applied'}).nodes().toArray().filter(n => $(n).find('.row-check').is(':checked'));
+    return checked.length > 0 ? checked : table.rows({search:'applied'}).nodes().toArray();
+}
+
+function saveTargets(type) {
+    const { p, s } = getTableContext();
+    if(!p) return showToast("Error", "No project data found!");
+
+    // 1. LOOK DIRECTLY FOR THE INPUT WITH "PORT" IN THE PLACEHOLDER
+    // This bypasses all row/column index issues
+    let portFilter = "";
+    $('input').each(function() {
+        if ($(this).attr('placeholder') && $(this).attr('placeholder').toLowerCase().includes('port')) {
+            portFilter = $(this).val().trim();
+        }
+    });
+
+    // 2. Build Suffix
+    let portSuffix = portFilter ? `_port_${portFilter.replace(/[^a-z0-9]/gi, '_')}` : "_all";
+
+    // 3. Logic for lines
+    let lines = getRows().map(n => {
+        if(type === 'url') {
+            let protocol = $(n).data('service').toLowerCase().includes('ssl') ? 'https' : 'http';
+            return `${protocol}://${$(n).data('ip')}:${$(n).data('port')}`;
+        }
+        return $(n).data('ip');
+    });
+
+    if(type === 'ip') lines = [...new Set(lines)];
+
+    let fname = `${type}${portSuffix}_targets.txt`;
+
+    fetch('/save_to_disk', { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body:JSON.stringify({project:p, subproject:s, filename:fname, ips:lines}) 
+    })
+    .then(r=>r.json())
+    .then(d => { 
+        window.lastF = d.full_path; 
+        showToast("Success", `Saved: ${fname}`); 
+        if (typeof updateCmd === "function") updateCmd();
+    });
+}
+function processXlsx() {
+    const { p, s } = getTableContext();
+    const data = getRows().map(n => ({ ip:$(n).data('ip'), port:$(n).data('port'), os:n.cells[4].innerText.trim(), protocol:n.cells[6].innerText.trim(), service:n.cells[7].innerText.trim(), note:n.cells[8].innerText.trim() }));
+    const cols = []; $('.col-chk:checked').each(function(){ cols.push($(this).val()); });
+    fetch('/save_xlsx', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:p, subproject:s, rows:data, columns:cols, group_by_ip:$('#groupIPCheck').is(':checked')}) })
+    .then(() => { bootstrap.Modal.getInstance('#xlsxModal').hide(); showToast("Success", "Excel generated."); });
+}
+
+function generateCmd() { if(!window.lastF) return showToast("Error", "Save targets first!"); updateCmd(); new bootstrap.Modal('#cmdModal').show(); }
+function updateCmd() {
+    const t = $('#toolType').val();
+    const fullPath = window.lastF || "/home/kali/draxer/scans/PROJ/SUB/targets.txt"; 
+    const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
+    
+    let cmd = "";
+    const cdCmd = `cd "${dir}" && `;
+
+    switch(t) {
+        case 'gowitness':
+            cmd = `gowitness scan file -f "${fullPath}" --screenshot-path "${dir}/screenshots" --threads 50`;
+            break;
+        case 'nxc_rdp':
+            cmd = `${cdCmd}nxc rdp "${fullPath}" -u '' -p '' --screenshot`;
+            break;
+        case 'nxc_smb':
+            cmd = `${cdCmd}nxc smb "${fullPath}" -u '' -p '' --shares`;
+            break;
+        case 'nxc_wmi':
+            cmd = `${cdCmd}nxc wmi "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_ftp':
+            cmd = `${cdCmd}nxc ftp "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_ssh':
+            cmd = `${cdCmd}nxc ssh "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_vnc':
+            cmd = `${cdCmd}nxc vnc "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_winrm':
+            cmd = `${cdCmd}nxc winrm "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_nfs':
+            cmd = `${cdCmd}nxc nfs "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_mssql':
+            cmd = `${cdCmd}nxc mssql "${fullPath}" -u '' -p ''`;
+            break;
+        case 'nxc_ldap':
+            cmd = `${cdCmd}nxc ldap "${fullPath}" -u '' -p ''`;
+            break;
+        default:
+            cmd = "Select a tool...";
+    }
+    
+    $('#cmdText').text(cmd);
+}
+function deleteRow(id) { if(confirm("Delete entry?")) fetch(`/delete_row/${id}`, { method: 'POST' }).then(() => { table.row($(`#row-${id}`)).remove().draw(); }); }
+function copyCmd() { navigator.clipboard.writeText($('#cmdText').text()); showToast("Copied", "Command copied to clipboard."); }
+</script>
+</body>
+</html>
