@@ -2,6 +2,8 @@
 
 # DRAXTER
 
+<b>Draxter tool is used for managing a big list of IP addresses for your pentest project.</b>
+
 `git clone https://github.com/DRAGOWN/DRAXTER.git`
 
 `cd DRAXTER/draxter`
