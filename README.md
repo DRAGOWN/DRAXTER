@@ -10,7 +10,7 @@
 
 `cd DRAXTER/draxter`
 
-`chmod +x install.sh run.sh`
+`chmod 750 install.sh run.sh`
 
 `./install.sh`
 
