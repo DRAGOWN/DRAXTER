@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 
 # --- SETTINGS ---
-BASE_DIR = "/home/kali/draxter/scans"
+BASE_DIR = "/home/kali/DRAXTER/scans"
 os.makedirs(BASE_DIR, exist_ok=True)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -72,6 +72,26 @@ def logout():
 @login_required
 def index():
     return render_template('index.html', scan_data=ScanResult.query.all())
+
+import subprocess
+
+@app.route('/execute_command', methods=['POST'])
+@login_required
+def execute_command():
+    data = request.json
+    cmd = data.get('command')
+    
+    if not cmd:
+        return jsonify({'status': 'error', 'message': 'No command provided'}), 400
+
+    try:
+        # Popen allows the command to run in the background 
+        # so the web UI doesn't freeze while waiting for the scan
+        subprocess.Popen(cmd, shell=True, stdout=None, stderr=None, start_new_session=True)
+        
+        return jsonify({'status': 'success', 'message': 'Execution started in background.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
 @login_required
@@ -205,27 +225,45 @@ def save_xlsx():
     
     out_path = os.path.join(BASE_DIR, d['project'], d['subproject'], "Draxter_Export.xlsx")
     final.to_excel(out_path, index=False)
-    return jsonify(status='success', path=out_path)
+    return jsonify({
+    'status': 'success', 
+    'full_path': os.path.abspath(full_path)})
 
 # --- FILE BROWSER ---
-@app.route('/browse')
+
+
+@app.route('/browse/')
 @app.route('/browse/<path:p>')
 @login_required
-def browse(p=""):
-    full = os.path.join(BASE_DIR, p)
-    items = []
-    if os.path.exists(full) and os.path.isdir(full):
-        for e in os.scandir(full):
-            items.append({
-                "name": e.name, "is_dir": e.is_dir(), 
-                "rel": os.path.relpath(e.path, BASE_DIR).replace("\\", "/")
-            })
-    return render_template('browse.html', items=items, current=p)
+def browse(p=''):
+    target_path = os.path.join(BASE_DIR, p)
+    if not os.path.exists(target_path):
+        abort(404)
 
-@app.route('/get_file/<path:filepath>')
+    # Generate breadcrumbs
+    parts = p.split('/') if p else []
+    breadcrumbs = []
+    curr_path = ""
+    for part in parts:
+        curr_path = os.path.join(curr_path, part)
+        breadcrumbs.append({'name': part, 'path': curr_path.replace("\\", "/")})
+
+    entries = os.scandir(target_path)
+    items = []
+    for e in entries:
+        items.append({
+            "name": e.name, 
+            "is_dir": e.is_dir(), 
+            "rel": os.path.relpath(e.path, BASE_DIR).replace("\\", "/")
+        })
+    
+    return render_template('browse.html', items=items, breadcrumbs=breadcrumbs, current_path=p)
+
+@app.route('/get_file/<path:filename>')
 @login_required
-def get_file(filepath):
-    return send_from_directory(BASE_DIR, filepath)
+def get_file(filename):
+    # This serves the file directly from your portable BASE_DIR (~/draxter_scans)
+    return send_from_directory(BASE_DIR, filename)
 
 # --- ERROR HANDLERS ---
 @app.errorhandler(401)
