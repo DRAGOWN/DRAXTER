@@ -42,24 +42,27 @@ Demo of HTTP scanning and autoscreenshot:
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/7d228f35-326a-466c-a9ff-0df21f8d84b7" />
 
-> Filtering the ports with regex input
+> <b>Filtering the ports with regex input</b>
+
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/519b1f3a-f502-4a9a-814f-7d862a1f059f" />
 
-> Exporting HTTP(s) Format
+> <b>Exporting HTTP(s) Format</b>
+
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/3be6014a-2304-4b55-9e34-883e2593f2fd" />
 
-> Selecting the execution command
+> <b>Selecting the execution command</b>
+
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/f5974daa-284d-4a13-b402-cac8a4314e84" />
 
 
-> Checking the screenshots in the Browse
+> <b>Checking the screenshots in the Browse</b>
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/f53e6562-1edc-4ebf-8e46-40bcb85cd995" />
 
-> Openning screenshots directly in browser
+> <b>Openning screenshots directly in browser</b>
 
 
 <img src="https://raw.githubusercontent.com/DRAGOWN/DRAXTER/refs/heads/main/draxter/static/Welcome.png" align="right" width="200">
