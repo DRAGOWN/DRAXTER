@@ -13,6 +13,7 @@
 4. `./install.sh`
 5. Set credentials
 6. `./run.sh`
+7. Browse: https://localhost:5000 
 
 ### Requirements
 
