@@ -32,14 +32,14 @@
 4. Select the specific attack
 5. Execute the selected command according your testing purposes
 
-Common Attacks:
+### Common Attacks:
 1. Auto screenshot a big list of HTTP(s) targets (thanks to gobuster)
 2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
-    3.1. SSHWMI, SMB, HTTP, HTTPS, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
+    3.1. SSH, WMI, SMB, HTTP, HTTPS, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
 
-Demo of HTTP scanning and autoscreenshot:
+### Demo of HTTP scanning and autoscreenshot:
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/7d228f35-326a-466c-a9ff-0df21f8d84b7" />
 
