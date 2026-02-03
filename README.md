@@ -52,13 +52,14 @@ Demo of HTTP scanning and autoscreenshot:
 
 > Selecting the execution command
 
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/7520d9d0-dd58-46af-8af6-db8787c16049" />
+<img width="849" alt="image" src="https://github.com/user-attachments/assets/f5974daa-284d-4a13-b402-cac8a4314e84" />
+
 
 > Checking the screenshots in the Browse
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/f53e6562-1edc-4ebf-8e46-40bcb85cd995" />
 
-> Checking screenshots directly in browser
+> Openning screenshots directly in browser
 
 
 <img src="https://raw.githubusercontent.com/DRAGOWN/DRAXTER/refs/heads/main/draxter/static/Welcome.png" align="right" width="200">
