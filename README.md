@@ -20,9 +20,11 @@
 * Flask==3.0.3
 * Flask-SQLAlchemy==3.1.1
 * Flask-Login==0.6.3
+* imgkit
 * pandas>=2.2.2
 * openpyxl==3.1.2
 * SQLAlchemy>=2.0.36
+* wkhtmltox_0.12.6.1 (with dpkg - requires privileges)
 
 ### Steps
 
@@ -37,9 +39,11 @@
 2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
-    3.1. SSH, WMI, SMB, HTTP, HTTPS, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
+    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
 
 ### Demo of HTTP scanning and autoscreenshot:
+
+#### HTTP Screenshots
 
 <img width="849" alt="image" src="https://github.com/user-attachments/assets/7d228f35-326a-466c-a9ff-0df21f8d84b7" />
 
@@ -65,5 +69,14 @@
 
 > <b>Openning screenshots directly in browser</b>
 
+#### SSH
+
+<img width="1005" height="568" alt="image" src="https://github.com/user-attachments/assets/b18b2083-152c-4662-9899-8d187710ffba" />
+
+> Executing credentialed SSH scan
+
+<img width="1200" height="375" alt="image" src="https://github.com/user-attachments/assets/36a5c5b6-31d5-4a0e-83e5-b398125378ed" />
+
+> Proof: Shell access gained
 
 <img src="https://raw.githubusercontent.com/DRAGOWN/DRAXTER/refs/heads/main/draxter/static/Welcome.png" align="right" width="200">
