@@ -52,7 +52,20 @@
         .logo-header { max-height: 65px; margin-bottom: 20px; }
         .editable-note { background: #0f172a; border: 1px solid #475569; padding: 5px; min-width: 150px; border-radius: 4px; }
         .sticky-filter-row { background: var(--card-navy); position: sticky; top: 0; z-index: 10; }
-        .command-box { background: #000; color: #00ff00; padding: 15px; border-radius: 5px; font-family: 'Fira Code', monospace; }
+        .command-box { 
+            background: #000; 
+            color: #00ff00; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-family: 'Fira Code', monospace;
+            border: 1px solid #444;
+            min-height: 80px;
+            cursor: text;
+        }
+/* Ensure the editable area doesn't have a weird white border when clicked */
+#cmdText:focus {
+    outline: none;
+}
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
         .draxter-toast { background-color: var(--card-navy); color: var(--text-main); border-left: 4px solid var(--accent-blue); min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         .footer-logo { height: 24px; width: auto; object-fit: contain; filter: drop-shadow(0 0 2px var(--accent-blue)); }
@@ -191,6 +204,7 @@
             <div class="modal-body">
                 <select id="toolType" class="form-select bg-secondary text-white border-0 mb-3" onchange="updateCmd()">
                     <option value="gowitness">Gowitness (Screenshots)</option>
+                    <option value="nxc_webdav">NXC WebDAV</option>
                     <option value="nxc_rdp">NXC RDP (Screenshots)</option>
                     <option value="nxc_smb">NXC SMB (Shares)</option>
                     <option value="nxc_wmi">NXC WMI</option>
@@ -223,17 +237,20 @@
                     </div>
                 </div>
                 
-                <div class="command-box d-flex justify-content-between align-items-start mb-0">
-                    <span id="cmdText" style="word-break: break-all;"></span>
-                    <button class="btn btn-sm btn-outline-info ms-2" onclick="copyCmd()"><i class="bi bi-clipboard"></i></button>
+                <div class="command-box mb-3">
+                    <div id="cmdText" 
+                         contenteditable="true" 
+                         spellcheck="false" 
+                         style="word-break: break-all; width: 100%;">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-secondary d-flex justify-content-between">
                 <button class="btn btn-outline-info btn-sm" onclick="copyCmd()">
                     <i class="bi bi-clipboard"></i> COPY COMMAND
                 </button>
-                <button id="runCmdBtn" class="btn btn-danger btn-sm fw-bold px-4" onclick="runCommand()">
-                    <i class="bi bi-play-fill"></i> EXECUTE NOW
+                <button class="btn btn-danger btn-sm fw-bold px-4 shadow" onclick="executeAndCapture()">
+                        <i class="bi bi-fire"></i> RUN & SHOT
                 </button>
             </div>
         </div>
@@ -349,6 +366,46 @@ function runCommand() {
     });
 }
 
+function executeAndCapture() {
+    const cmd = document.getElementById('cmdText').innerText.trim();
+    const tool = $('#toolType').val() || "manual_run";
+    const dir = window.lastF ? window.lastF.substring(0, window.lastF.lastIndexOf('/')) : null;
+
+    if (!dir || cmd === "" || cmd.includes("Please save targets")) {
+        showToast("Error", "Select project or fix command first!");
+        return;
+    }
+
+    const $btn = $('.btn-danger');
+    // Save original state with the fire icon
+    const originalHtml = '<i class="bi bi-fire"></i> RUN & SHOT';
+    
+    $btn.html('<span class="spinner-border spinner-border-sm"></span> FIRING...').prop('disabled', true);
+
+    fetch('/execute_capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            command: cmd, 
+            path: dir,
+            tool_type: tool,
+            password: $('#cmdPass').val()
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast("Success", `Evidence saved: ${data.filename}`);
+        } else {
+            showToast("Error", data.message);
+        }
+    })
+    .catch(err => showToast("Error", "Check backend /execute_capture route"))
+    .finally(() => {
+        $btn.html(originalHtml).prop('disabled', false);
+    });
+}
+
 function saveTargets(type) {
     const { p, s } = getTableContext();
     if(!p) return showToast("Error", "No project data found!");
@@ -416,55 +473,135 @@ function togglePassword() {
 function updateCmd() {
     const t = $('#toolType').val();
     
-    // Fallback if no file has been saved yet
     if (!window.lastF) {
         $('#cmdText').text("Please save targets first to generate path...");
         return;
     }
 
     const fullPath = window.lastF; 
-    // This extracts the directory dynamically from the full path saved on disk
     const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
     
-    // Capture Credentials
     const user = $('#cmdUser').val() || "''";
     const pass = $('#cmdPass').val() || "''";
-    const domain = $('#cmdDomain').val() || ".";
+    const domain = $('#cmdDomain').val() || ""; 
     
     let cmd = "";
-    // Dynamically uses the 'dir' variable we just calculated
     const cdCmd = `cd "${dir}" && `;
 
-    // Base NXC string
-    const nxcBase = `${cdCmd}nxc ${t.replace('nxc_', '')} "${fullPath}" -u '${user}' -p '${pass}' -d '${domain}'`;
+    // Logic: If tool is nxc_webdav, protocol is 'smb' but we append '-M webdav' later
+    let protocol = t.replace('nxc_', '');
+    if (t === 'nxc_webdav') protocol = 'smb';
+
+    let nxcBase = `${cdCmd}nxc ${protocol} "${fullPath}" -u '${user}' -p '${pass}'`;
+    
+    if (domain.trim() !== "" && domain.trim() !== ".") {
+        nxcBase += ` -d '${domain}'`;
+    }
 
     switch(t) {
         case 'gowitness':
             cmd = `gowitness scan file -f "${fullPath}" --screenshot-path "${dir}/gowitness" --threads 50`;
             if(user !== "''") cmd += ` --auth-user '${user}' --auth-pass '${pass}'`;
             break;
-            
-        case 'nxc_rdp':
-            cmd = `${nxcBase} --nla-screenshot && mv ~/.nxc/screenshots/*.png "${dir}/nxc/" 2>/dev/null`;
+        case 'nxc_webdav':
+            // SMB protocol with WebDAV module
+            cmd = `${nxcBase} -M webdav`;
             break;
-            
+        case 'nxc_rdp':
+            cmd = `${nxcBase} --nla-screenshot`;
+            break;
         case 'nxc_smb':
             cmd = `${nxcBase} --shares`;
             break;
-
         case 'nxc_mssql':
             cmd = `${nxcBase} --databases`;
             break;
-
         case 'nxc_ldap':
             cmd = `${nxcBase} --trusted-for-delegation --password-not-required`;
             break;
-
         default:
             cmd = nxcBase;
     }
     
-    $('#cmdText').text(cmd);
+    document.getElementById('cmdText').innerText = cmd;
+}
+
+function runCommand() {
+    // Capture manual edits from the editable div
+    const cmd = document.getElementById('cmdText').innerText.trim();
+    const runBtn = $('#runCmdBtn');
+
+    if (!cmd || cmd === "" || cmd.includes("Please save targets")) {
+        showToast("Error", "Command is empty!");
+        return;
+    }
+
+    if (!confirm("Initiate attack execution?")) return;
+
+    runBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> RUNNING...');
+
+    fetch('/execute_command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: cmd })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast("System", "Execution started!");
+            bootstrap.Modal.getInstance('#cmdModal').hide();
+        } else {
+            showToast("Error", data.message);
+        }
+    })
+    .finally(() => {
+        runBtn.prop('disabled', false).html('<i class="bi bi-play-fill"></i> EXECUTE NOW');
+    });
+}
+
+function executeAndCapture() {
+    // Capture manual edits from the editable div
+    const cmd = document.getElementById('cmdText').innerText.trim();
+    const tool = $('#toolType').val() || "manual_run";
+    const dir = window.lastF ? window.lastF.substring(0, window.lastF.lastIndexOf('/')) : null;
+
+    const pass = $('#cmdPass').val();
+
+    if (!dir || cmd === "") {
+        alert("Select project or fix command first!");
+        return;
+    }
+
+    const $btn = $('.btn-outline-warning');
+    $btn.html('<span class="spinner-border spinner-border-sm"></span> Capturing...').prop('disabled', true);
+
+    fetch('/execute_capture', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+        command: cmd, 
+        path: dir,
+        tool_type: tool,
+        password: $('#cmdPass').val() // Check this line!
+    })
+})
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast("Success", `Evidence saved: ${data.filename}`);
+        } else {
+            showToast("Error", data.message);
+        }
+    })
+    .finally(() => {
+        $btn.html('<i class="bi bi-camera-reels"></i> RUN & SHOT').prop('disabled', false);
+    });
+}
+
+function copyCmd() {
+    const text = document.getElementById('cmdText').innerText;
+    navigator.clipboard.writeText(text);
+    showToast("Copied", "Command copied to clipboard.");
 }
 
 function deleteRow(id) { if(confirm("Delete entry?")) fetch(`/delete_row/${id}`, { method: 'POST' }).then(() => { table.row($(`#row-${id}`)).remove().draw(); }); }
