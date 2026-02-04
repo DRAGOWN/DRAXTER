@@ -204,6 +204,7 @@
             <div class="modal-body">
                 <select id="toolType" class="form-select bg-secondary text-white border-0 mb-3" onchange="updateCmd()">
                     <option value="gowitness">Gowitness (Screenshots)</option>
+                    <option value="sslscan">SSLScan</option>
                     <option value="nxc_webdav">NXC WebDAV</option>
                     <option value="nxc_rdp">NXC RDP (Screenshots)</option>
                     <option value="nxc_smb">NXC SMB (Shares)</option>
@@ -215,6 +216,7 @@
                     <option value="nxc_nfs">NXC NFS</option>
                     <option value="nxc_mssql">NXC MSSQL</option>
                     <option value="nxc_ldap">NXC LDAP</option>
+                    <option value="custom">CUSTOM COMMAND</option>
                 </select>
                 
                 <div class="row g-3 mb-3">
@@ -244,13 +246,36 @@
                          style="word-break: break-all; width: 100%;">
                     </div>
                 </div>
+                <div id="jobPanel" class="mt-3 pt-3 border-top" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-warning mb-0 small uppercase"><i class="bi bi-cpu-fill"></i> Pipeline Status</h6>
+                        <span class="badge bg-dark border border-secondary text-info" id="jobCount">0 / 0</span>
+                    </div>
+                    <div id="jobList" class="bg-black rounded p-2" style="max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.8rem;">
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer border-secondary d-flex justify-content-between">
-                <button class="btn btn-outline-info btn-sm" onclick="copyCmd()">
-                    <i class="bi bi-clipboard"></i> COPY COMMAND
-                </button>
-                <button class="btn btn-danger btn-sm fw-bold px-4 shadow" onclick="executeAndCapture()">
-                        <i class="bi bi-fire"></i> RUN & SHOT
+            <div class="modal-body">
+                            <div id="cmdText" class="p-3 bg-dark text-success rounded border border-secondary mb-3" style="font-family: monospace;">
+                    Select a tool...
+                </div>
+
+                <div id="jobPanel" class="mt-3 pt-3 border-top" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-warning mb-0 small"><i class="bi bi-cpu-fill"></i> ACTIVE PIPELINE</h6>
+                        <span class="badge bg-dark border border-secondary text-info" id="jobCount">0 / 0</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 5px; background-color: #111;">
+                        <div id="jobProgressBar" class="progress-bar bg-info" style="width: 0%"></div>
+                    </div>
+                    <div id="jobList" class="bg-black rounded p-2" style="max-height: 150px; overflow-y: auto; border: 1px solid #333;">
+                        </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-warning" id="runBatchBtn" onclick="executeAndCapture()">
+                    <i class="bi bi-camera-reels"></i> RUN & SHOT
                 </button>
             </div>
         </div>
@@ -366,52 +391,89 @@ function runCommand() {
     });
 }
 
-function executeAndCapture() {
-    const cmd = document.getElementById('cmdText').innerText.trim();
-    const tool = $('#toolType').val() || "manual_run";
-    const dir = window.lastF ? window.lastF.substring(0, window.lastF.lastIndexOf('/')) : null;
-
-    if (!dir || cmd === "" || cmd.includes("Please save targets")) {
-        showToast("Error", "Select project or fix command first!");
-        return;
+async function executeAndCapture() {
+    const cmdText = $('#cmdText').text().trim();
+    const tool = $('#toolType').val();
+    const pass = $('#cmdPass').val();
+    
+    // Ensure we have a file selected
+    if (!window.lastF) {
+        return showToast("Error", "Please select a target file from the browser first.");
     }
 
-    const $btn = $('.btn-danger');
-    // Save original state with the fire icon
-    const originalHtml = '<i class="bi bi-fire"></i> RUN & SHOT';
-    
-    $btn.html('<span class="spinner-border spinner-border-sm"></span> FIRING...').prop('disabled', true);
+    // Extract the relative path and filename
+    // Example: lastF = "Project1/Sub1/ips.txt"
+    const pathParts = window.lastF.split('/');
+    const fileName = pathParts.pop();
+    const relPath = pathParts.join('/'); 
 
-    fetch('/execute_capture', {
+    // 1. Fetch the list of targets from the file
+    const tReq = await fetch('/get_targets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            command: cmd, 
-            path: dir,
-            tool_type: tool,
-            password: $('#cmdPass').val()
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.status === 'success') {
-            showToast("Success", `Evidence saved: ${data.filename}`);
-        } else {
-            showToast("Error", data.message);
-        }
-    })
-    .catch(err => showToast("Error", "Check backend /execute_capture route"))
-    .finally(() => {
-        $btn.html(originalHtml).prop('disabled', false);
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ filename: fileName, path: relPath })
     });
+    const tData = await tReq.json();
+
+    let targets = [];
+    if (tData.status === 'success' && tData.targets.length > 0) {
+        targets = tData.targets.map(t => t.trim()).filter(t => t.length > 0);
+    } else {
+        // Fallback for manual runs or empty files
+        targets = ["SINGLE_RUN"];
+    }
+
+    // 2. UI Setup
+    $('#jobPanel').fadeIn();
+    $('#jobList').empty();
+    const $btn = $('#runBatchBtn');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> RUNNING...');
+
+    // 3. Sequential Execution Loop
+    for (let i = 0; i < targets.length; i++) {
+        const currentTarget = targets[i];
+        const jobId = `job-${i}`;
+
+        $('#jobList').prepend(`
+            <div id="${jobId}" class="d-flex justify-content-between border-bottom border-secondary py-1 px-2 mb-1">
+                <span class="text-info small">${currentTarget}</span>
+                <span class="status"><span class="spinner-border spinner-border-sm text-warning"></span></span>
+            </div>
+        `);
+
+        try {
+            const response = await fetch('/execute_capture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    command: cmdText, 
+                    path: relPath, 
+                    tool_type: tool, 
+                    password: pass,
+                    single_target: currentTarget 
+                })
+            });
+            
+            const result = await response.json();
+            if (result.status === 'success') {
+                $(`#${jobId} .status`).html('<i class="bi bi-check-lg text-success"></i>');
+            } else {
+                $(`#${jobId} .status`).html(`<i class="bi bi-x-lg text-danger" title="${result.message}"></i>`);
+            }
+        } catch (err) {
+            $(`#${jobId} .status`).html('<i class="bi bi-bug text-danger"></i>');
+        }
+        
+        $('#jobCount').text(`${i + 1} / ${targets.length}`);
+    }
+
+    $btn.prop('disabled', false).html('<i class="bi bi-camera-reels"></i> RUN & SHOT');
 }
 
 function saveTargets(type) {
     const { p, s } = getTableContext();
     if(!p) return showToast("Error", "No project data found!");
 
-    // 1. LOOK DIRECTLY FOR THE INPUT WITH "PORT" IN THE PLACEHOLDER
-    // This bypasses all row/column index issues
     let portFilter = "";
     $('input').each(function() {
         if ($(this).attr('placeholder') && $(this).attr('placeholder').toLowerCase().includes('port')) {
@@ -419,21 +481,24 @@ function saveTargets(type) {
         }
     });
 
-    // 2. Build Suffix
     let portSuffix = portFilter ? `_port_${portFilter.replace(/[^a-z0-9]/gi, '_')}` : "_all";
 
-    // 3. Logic for lines
     let lines = getRows().map(n => {
+        const ip = $(n).data('ip');
+        const port = $(n).data('port');
+        
         if(type === 'url') {
-            let protocol = $(n).data('service').toLowerCase().includes('ssl') ? 'https' : 'http';
-            return `${protocol}://${$(n).data('ip')}:${$(n).data('port')}`;
+            // No more filtering or guessing. 
+            // We force https:// for every target to ensure SSLScan has the correct URI format.
+            return `https://${ip}:${port}/`;
         }
-        return $(n).data('ip');
+        return ip;
     });
 
     if(type === 'ip') lines = [...new Set(lines)];
 
-    let fname = `${type}${portSuffix}_targets.txt`;
+    // We change the filename prefix to 'ssl_targets' if it's the URL format to keep things organized
+    let fname = type === 'url' ? `ssl${portSuffix}_targets.txt` : `ip${portSuffix}_targets.txt`;
 
     fetch('/save_to_disk', { 
         method:'POST', 
@@ -447,6 +512,7 @@ function saveTargets(type) {
         if (typeof updateCmd === "function") updateCmd();
     });
 }
+
 function processXlsx() {
     const { p, s } = getTableContext();
     const data = getRows().map(n => ({ ip:$(n).data('ip'), port:$(n).data('port'), os:n.cells[4].innerText.trim(), protocol:n.cells[6].innerText.trim(), service:n.cells[7].innerText.trim(), note:n.cells[8].innerText.trim() }));
@@ -480,7 +546,7 @@ function updateCmd() {
 
     const fullPath = window.lastF; 
     const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
-    
+    const fileName = fullPath.split('/').pop();
     const user = $('#cmdUser').val() || "''";
     const pass = $('#cmdPass').val() || "''";
     const domain = $('#cmdDomain').val() || ""; 
@@ -492,15 +558,31 @@ function updateCmd() {
     let protocol = t.replace('nxc_', '');
     if (t === 'nxc_webdav') protocol = 'smb';
 
-    let nxcBase = `${cdCmd}nxc ${protocol} "${fullPath}" -u '${user}' -p '${pass}'`;
+    //let nxcBase = `${cdCmd}nxc ${protocol} "${fullPath}" -u '${user}' -p '${pass}'`;
+    let nxcBase = `nxc ${protocol} "${fileName}" -u '${user}' -p '${pass}'`;
     
     if (domain.trim() !== "" && domain.trim() !== ".") {
         nxcBase += ` -d '${domain}'`;
     }
 
     switch(t) {
+    	case 'sslscan':
+    	    // We look for 'ssl' in the filename to ensure the user used the correct export
+    	    if (!window.lastF.includes('ssl')) {
+    	        showToast("Format Warning", "Please Export > HTTP(S) Format first to generate the https:// prefixes.");
+    	        cmd = "# Error: Use HTTP(S) Export first";
+    	    } else {
+    	        // --get-certificate is often useful for artifacts to see the SAN and Issuer
+    	        cmd = `sslscan --targets=${fileName}`;
+    	    }
+    	    break;
+        case 'custom':
+            // Clears the preset and gives the pentester the directory context to start typing
+            cmd = "whoami"; // Default safe start
+            cmd = `${cdCmd}`;
+            break;
         case 'gowitness':
-            cmd = `gowitness scan file -f "${fullPath}" --screenshot-path "${dir}/gowitness" --threads 50`;
+            cmd = `gowitness scan file -f "${fileName}" --screenshot-path "${dir}/gowitness" --threads 50`;
             if(user !== "''") cmd += ` --auth-user '${user}' --auth-pass '${pass}'`;
             break;
         case 'nxc_webdav':
@@ -564,7 +646,6 @@ function executeAndCapture() {
     const cmd = document.getElementById('cmdText').innerText.trim();
     const tool = $('#toolType').val() || "manual_run";
     const dir = window.lastF ? window.lastF.substring(0, window.lastF.lastIndexOf('/')) : null;
-
     const pass = $('#cmdPass').val();
 
     if (!dir || cmd === "") {
@@ -573,7 +654,10 @@ function executeAndCapture() {
     }
 
     const $btn = $('.btn-outline-warning');
+    const originalContent = '<i class="bi bi-camera-reels"></i> RUN & SHOT';
     $btn.html('<span class="spinner-border spinner-border-sm"></span> Capturing...').prop('disabled', true);
+
+    showToast("System", `Initiating ${tool.toUpperCase()}... Screenshot will generate upon completion.`);
 
     fetch('/execute_capture', {
     method: 'POST',
@@ -593,8 +677,13 @@ function executeAndCapture() {
             showToast("Error", data.message);
         }
     })
+    .catch(err => {
+        showToast("Critical", "Network error or backend timeout.");
+        console.error(err);
+    })
     .finally(() => {
-        $btn.html('<i class="bi bi-camera-reels"></i> RUN & SHOT').prop('disabled', false);
+        // 6. Reset UI State
+        $btn.html(originalContent).prop('disabled', false);
     });
 }
 
