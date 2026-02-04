@@ -22,6 +22,7 @@
 * Flask-SQLAlchemy==3.1.1
 * Flask-Login==0.6.3
 * imgkit
+* ansi2html
 * pandas>=2.2.2
 * openpyxl==3.1.2
 * SQLAlchemy>=2.0.36
@@ -43,7 +44,7 @@
     3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL
 
 ### Improvements in v1.4
-* Improved terminal view
+* Improved terminal view (thanks to ansi2html)
 * Added custom command execution
 * Added sslscan
 * Improvements in gowitness target selection process
