@@ -11,9 +11,10 @@
 2. `cd DRAXTER`
 3. `chmod 750 install.sh run.sh`
 4. `./install.sh`
-5. Set credentials
-6. `./run.sh`
-7. Browse: https://localhost:5000 
+5. You will be asked to input sudoer's password
+6. Set application credentials
+7. `./run.sh`
+8. Browse: https://localhost:5000 
 
 ### Requirements
 
@@ -39,44 +40,16 @@
 2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
-    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
+    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL
 
-### Demo of HTTP scanning and autoscreenshot:
+### Improvements in v1.4
+* Improved terminal view
+* Added custom command execution
+* Added sslscan
+* Improvements in gowitness target selection process
+* Now DRAXTER speaks in Nessus language:
+   Made DRAXTER compatible to Nessus XML output by the request of our intelligent users.
 
-#### HTTP Screenshots
-
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/7d228f35-326a-466c-a9ff-0df21f8d84b7" />
-
-> <b>Filtering the ports with regex input</b>
-
-
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/519b1f3a-f502-4a9a-814f-7d862a1f059f" />
-
-> <b>Exporting HTTP(s) Format</b>
-
-
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/3be6014a-2304-4b55-9e34-883e2593f2fd" />
-
-> <b>Selecting the execution command</b>
-
-
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/f5974daa-284d-4a13-b402-cac8a4314e84" />
-
-
-> <b>Checking the screenshots in the Browse</b>
-
-<img width="849" alt="image" src="https://github.com/user-attachments/assets/f53e6562-1edc-4ebf-8e46-40bcb85cd995" />
-
-> <b>Openning screenshots directly in browser</b>
-
-#### SSH
-
-<img width="1005" height="568" alt="image" src="https://github.com/user-attachments/assets/b18b2083-152c-4662-9899-8d187710ffba" />
-
-> Executing credentialed SSH scan
-
-<img width="1200" height="375" alt="image" src="https://github.com/user-attachments/assets/36a5c5b6-31d5-4a0e-83e5-b398125378ed" />
-
-> Proof: Shell access gained
+This is just a beginning 💥
 
 <img src="https://raw.githubusercontent.com/DRAGOWN/DRAXTER/refs/heads/main/draxter/static/Welcome.png" align="right" width="200">
