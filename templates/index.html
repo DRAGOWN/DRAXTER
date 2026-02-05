@@ -157,9 +157,15 @@
 <div class="modal fade" id="xlsxModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content bg-dark text-white">
-            <div class="modal-header border-secondary"><h5>Excel Export Configuration</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header border-secondary">
+                <h5>Excel Export Configuration</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
             <div class="modal-body">
-                <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="groupIPCheck"><label class="form-check-label">Unite services per IP</label></div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="groupIPCheck">
+                    <label class="form-check-label">Unite services per IP</label>
+                </div>
                 <div class="row px-2">
                     <div class="col-6"><input type="checkbox" class="col-chk" value="ip" checked> IP</div>
                     <div class="col-6"><input type="checkbox" class="col-chk" value="os" checked> OS</div>
@@ -168,7 +174,9 @@
                     <div class="col-6"><input type="checkbox" class="col-chk" value="note" checked> Note</div>
                 </div>
             </div>
-            <div class="modal-footer border-secondary"><button class="btn btn-navy-modal w-100" onclick="processXlsx()">GENERATE XLSX</button></div>
+            <div class="modal-footer border-secondary">
+                <button class="btn btn-navy-modal w-100" onclick="processXlsx()">GENERATE XLSX</button>
+            </div>
         </div>
     </div>
 </div>
@@ -176,7 +184,10 @@
 <div class="modal fade" id="cmdModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-dark text-white">
-            <div class="modal-header border-secondary"><h5>CLI Integration</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-header border-secondary">
+                <h5>CLI Integration</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
             <div class="modal-body">
                 <select id="toolType" class="form-select bg-secondary text-white border-0 mb-3" onchange="updateCmd()">
                     <option value="gowitness">Gowitness (Screenshots)</option>
@@ -191,7 +202,6 @@
                     <option value="nxc_mssql">NXC MSSQL</option>
                     <option value="nxc_ldap">NXC LDAP</option>
                 </select>
-                
                 
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
@@ -208,16 +218,23 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-        <label class="form-label small text-secondary">DOMAIN / WORKGROUP</label>
-        <input type="text" id="cmdDomain" class="form-control form-control-sm bg-dark text-info border-secondary" placeholder="." oninput="updateCmd()">
-    </div>
-</div>
+                        <label class="form-label small text-secondary">DOMAIN / WORKGROUP</label>
+                        <input type="text" id="cmdDomain" class="form-control form-control-sm bg-dark text-info border-secondary" placeholder="." oninput="updateCmd()">
+                    </div>
+                </div>
                 
-                
-                <div class="command-box d-flex justify-content-between align-items-start">
+                <div class="command-box d-flex justify-content-between align-items-start mb-0">
                     <span id="cmdText" style="word-break: break-all;"></span>
                     <button class="btn btn-sm btn-outline-info ms-2" onclick="copyCmd()"><i class="bi bi-clipboard"></i></button>
                 </div>
+            </div>
+            <div class="modal-footer border-secondary d-flex justify-content-between">
+                <button class="btn btn-outline-info btn-sm" onclick="copyCmd()">
+                    <i class="bi bi-clipboard"></i> COPY COMMAND
+                </button>
+                <button id="runCmdBtn" class="btn btn-danger btn-sm fw-bold px-4" onclick="runCommand()">
+                    <i class="bi bi-play-fill"></i> EXECUTE NOW
+                </button>
             </div>
         </div>
     </div>
@@ -276,6 +293,60 @@ function getTableContext() {
 function getRows() {
     let checked = table.rows({search:'applied'}).nodes().toArray().filter(n => $(n).find('.row-check').is(':checked'));
     return checked.length > 0 ? checked : table.rows({search:'applied'}).nodes().toArray();
+}
+
+function updateModalContent() {
+    const img = currentImages[currentIndex];
+    const imageUrl = '/get_file/' + img.rel;
+    
+    // Select the image element
+    const $previewImg = $('#modalPreviewImg');
+
+    // Add an error handler to catch path issues
+    $previewImg.on('error', function() {
+        console.error("Failed to load image at: " + imageUrl);
+        showToast("Error", "Could not load image. Check file permissions.");
+    });
+
+    $previewImg.attr('src', imageUrl);
+    $('#imageModalLabel').text(img.name + ` (${currentIndex + 1} / ${currentImages.length})`);
+    $('#imagePathDisplay').text('Path: ' + img.rel);
+}
+
+function runCommand() {
+    const cmd = $('#cmdText').text();
+    const runBtn = $('#runCmdBtn');
+
+    if (!cmd || cmd === "Select a tool...") {
+        showToast("Error", "Generate a command first!");
+        return;
+    }
+
+    if (!confirm("Initiate attack execution on system shell?")) return;
+
+    // Loading State
+    runBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> RUNNING...');
+
+    fetch('/execute_command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: cmd })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast("System", "Command sent to background! Results will appear in Browse.");
+            // Optional: Close modal automatically on success
+            bootstrap.Modal.getInstance('#cmdModal').hide();
+        } else {
+            showToast("Error", data.message);
+        }
+    })
+    .catch(err => showToast("Error", "Execution failed: " + err))
+    .finally(() => {
+        // Reset button
+        runBtn.prop('disabled', false).html('<i class="bi bi-play-fill"></i> EXECUTE NOW');
+    });
 }
 
 function saveTargets(type) {
@@ -344,7 +415,15 @@ function togglePassword() {
 
 function updateCmd() {
     const t = $('#toolType').val();
-    const fullPath = window.lastF || "/home/kali/draxter/scans/PROJ/SUB/targets.txt"; 
+    
+    // Fallback if no file has been saved yet
+    if (!window.lastF) {
+        $('#cmdText').text("Please save targets first to generate path...");
+        return;
+    }
+
+    const fullPath = window.lastF; 
+    // This extracts the directory dynamically from the full path saved on disk
     const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
     
     // Capture Credentials
@@ -353,9 +432,10 @@ function updateCmd() {
     const domain = $('#cmdDomain').val() || ".";
     
     let cmd = "";
+    // Dynamically uses the 'dir' variable we just calculated
     const cdCmd = `cd "${dir}" && `;
 
-    // Base NXC string to avoid repetition
+    // Base NXC string
     const nxcBase = `${cdCmd}nxc ${t.replace('nxc_', '')} "${fullPath}" -u '${user}' -p '${pass}' -d '${domain}'`;
 
     switch(t) {
@@ -381,13 +461,11 @@ function updateCmd() {
             break;
 
         default:
-            // Handles ftp, ssh, vnc, winrm, nfs, wmi automatically
             cmd = nxcBase;
     }
     
     $('#cmdText').text(cmd);
 }
-
 
 function deleteRow(id) { if(confirm("Delete entry?")) fetch(`/delete_row/${id}`, { method: 'POST' }).then(() => { table.row($(`#row-${id}`)).remove().draw(); }); }
 function copyCmd() { navigator.clipboard.writeText($('#cmdText').text()); showToast("Copied", "Command copied to clipboard."); }

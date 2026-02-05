@@ -6,13 +6,15 @@
 
 ### Instalation & Execution
 ❗❗❗ Compatible with Kali Linux using kali default user
-```
-git clone https://github.com/DRAGOWN/DRAXTER.git
-cd DRAXTER
-chmod 750 install.sh run.sh
-./install.sh
-./run.sh
-```
+
+1. `git clone https://github.com/DRAGOWN/DRAXTER.git`
+2. `cd DRAXTER`
+3. `chmod 750 install.sh run.sh`
+4. `./install.sh`
+5. Set credentials
+6. `./run.sh`
+7. Browse: https://localhost:5000 
+
 ### Requirements
 
 * Flask==3.0.3
@@ -30,56 +32,38 @@ chmod 750 install.sh run.sh
 4. Select the specific attack
 5. Execute the selected command according your testing purposes
 
-Common Attacks:
+### Common Attacks:
 1. Auto screenshot a big list of HTTP(s) targets (thanks to gobuster)
 2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
-    3.1. SSHWMI, SMB, HTTP, HTTPS, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
+    3.1. SSH, WMI, SMB, HTTP, HTTPS, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP
 
-Demo
+### Demo of HTTP scanning and autoscreenshot:
 
-<img width="900" height="317" alt="image" src="https://github.com/user-attachments/assets/0dcdc87a-ac75-4555-8347-3f58d9eea5a2" />
+<img width="849" alt="image" src="https://github.com/user-attachments/assets/7d228f35-326a-466c-a9ff-0df21f8d84b7" />
 
-> Step #1: Name project and upload nmap scan in XML format
+> <b>Filtering the ports with regex input</b>
 
-<img width="900" height="317" alt="image" src="https://github.com/user-attachments/assets/bb4456ae-e3bb-4733-be3e-826ee084e74f" />
 
-> XML file uploaded: You can search service/port by integrated dukduckgo search
+<img width="849" alt="image" src="https://github.com/user-attachments/assets/519b1f3a-f502-4a9a-814f-7d862a1f059f" />
 
-<img width="900" height="943" alt="image" src="https://github.com/user-attachments/assets/9916248b-1735-44fe-9748-2d9fe21fb08f" />
+> <b>Exporting HTTP(s) Format</b>
 
-> Redirected to duckduckgo with specific dork
 
-<img width="900" height="552" alt="image" src="https://github.com/user-attachments/assets/57a00191-8b0f-4b04-9e84-8015878c0fbf" />
+<img width="849" alt="image" src="https://github.com/user-attachments/assets/3be6014a-2304-4b55-9e34-883e2593f2fd" />
 
-> Exporting all IP addresses with 3389 port open in TXT file
+> <b>Selecting the execution command</b>
 
-<img width="900" height="365" alt="image" src="https://github.com/user-attachments/assets/4e98a1fe-7a20-4b0b-b90a-1f43cc6fe971" />
 
-> The file is saved locally
+<img width="849" alt="image" src="https://github.com/user-attachments/assets/f5974daa-284d-4a13-b402-cac8a4314e84" />
 
-<img width="900" height="588" alt="image" src="https://github.com/user-attachments/assets/d46db95f-6a4b-4425-92cf-68f6bb3bbbe3" />
 
-> After genereting targets file, you can start attack against them 
+> <b>Checking the screenshots in the Browse</b>
 
-<img width="900" height="381" alt="image" src="https://github.com/user-attachments/assets/5010af2f-32f4-4163-9c42-1be1494b7bf3" />
+<img width="849" alt="image" src="https://github.com/user-attachments/assets/f53e6562-1edc-4ebf-8e46-40bcb85cd995" />
 
-> Select specific attack according to the service/port. Pre-prepared command is ready for you selecting the generetad IP addresses as values, additionally you can execute authenticated scan
-
-<img width="900" height="74" alt="image" src="https://github.com/user-attachments/assets/a907906c-c369-40c3-8304-c1808b3d264e" />
-
-> Copy-pasting command and executing in the terminal
-
-<img width="900" height="376" alt="image" src="https://github.com/user-attachments/assets/7ed79ec1-23ec-441d-a933-9496f433ec10" />
-
-> After the scan is completed, click the File System icon
-
-<img width="900" height="469" alt="image" src="https://github.com/user-attachments/assets/0b6caf1e-d1d8-4b85-924b-163261188695" />
-
-> The folders are created and PoCs are visible in the web.
-
-All these steps may seem childish, but it is convenient when managing and attacking against a huge list of IP addresses with even more ports open.
+> <b>Openning screenshots directly in browser</b>
 
 
 <img src="https://raw.githubusercontent.com/DRAGOWN/DRAXTER/refs/heads/main/draxter/static/Welcome.png" align="right" width="200">
