@@ -37,7 +37,7 @@
 5. Execute the selected command according your testing purposes
 
 ### Common Attacks:
-1. Auto screenshot a big list of HTTP(s) targets (thanks to gobuster)
+1. Auto screenshot a big list of HTTP(s) targets (thanks to gowitness)
 2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
