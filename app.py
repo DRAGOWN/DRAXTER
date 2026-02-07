@@ -3,10 +3,9 @@ import subprocess
 import re
 import imgkit
 import shutil
-import shlex
 import xml.etree.ElementTree as ET
 import pandas as pd
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, abort, make_response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,15 +15,14 @@ from ansi2html import Ansi2HTMLConverter
 app = Flask(__name__)
 conv = Ansi2HTMLConverter(dark_bg=True, line_wrap=False, inline=True)
 
-# --- DYNAMIC SETTINGS ---
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# All results, exports, and screenshots live here
-SCANS_DIR = os.path.join(BASE_DIR, 'scans')
-os.makedirs(SCANS_DIR, exist_ok=True)
+# --- SETTINGS ---
+BASE_DIR = "/home/kali/DRAXTER/scans"
+os.makedirs(BASE_DIR, exist_ok=True)
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 app.config.update(
     SECRET_KEY='0i-G]3FTC*f2&V£o-0$y}-L0£,omm>Rm_ZRBG1;;K#]<rMWM>S',
-    SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(BASE_DIR, 'draxter.db'),
+    SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(basedir, 'draxter.db'),
     SQLALCHEMY_TRACK_MODIFICATIONS=False
 )
 
@@ -61,7 +59,7 @@ def login():
         if u and check_password_hash(u.password, request.form['password']):
             login_user(u)
             return redirect(url_for('index'))
-        return render_template('error.html', code=401, title="Login Failed", message="Invalid operator credentials."), 401
+        return render_template('error.html', code=401, title="Login Failed", message="Invalid operator credentials. Access attempt logged."), 401
     return render_template('login.html')
 
 @app.route('/logout')
@@ -75,112 +73,95 @@ def logout():
 def index():
     return render_template('index.html', scan_data=ScanResult.query.all())
 
+@app.route('/execute_command', methods=['POST'])
+@login_required
+def execute_command():
+    data = request.json
+    cmd = data.get('command')
+    if not cmd:
+        return jsonify({'status': 'error', 'message': 'No command provided'}), 400
+    try:
+        subprocess.Popen(cmd, shell=True, stdout=None, stderr=None, start_new_session=True)
+        return jsonify({'status': 'success', 'message': 'Execution started in background.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/execute_capture', methods=['POST'])
 @login_required
 def execute_capture():
     data = request.json
+    command_template = data.get('command', '').strip()
     
-    # 1. Command Preparation
-    raw_template = data.get('command', '').strip()
-    cmd_template = raw_template.replace('\xa0', ' ').replace('&nbsp;', ' ')
+    # 1. SANITIZE: Get the target and clean it
+    raw_target = data.get('single_target', '')
+    target = raw_target.strip().replace('\r', '').replace('\n', '')
     
-    # Get Project/Target info
-    project = data.get('project', 'General').strip()
-    subproject = data.get('subproject', 'Default').strip()
-    target = data.get('single_target', '').strip()
-    password = data.get('password', '').strip()
+    # FALLBACK: If target is empty, we check if it's a manual/single run
+    if not target:
+        target = "SINGLE_RUN"
 
-    # Safe mapping logic
-    port_val = str(data.get('port', ''))
-    mapping = {
-        "[TARGET]": target,
-        "[PORT]": port_val,
-        "[:PORT]": f":{port_val}" if port_val and port_val != '0' else "",
-        "[PROTO]": data.get('protocol', 'http'),
-        "[URL]": f"{data.get('protocol')}://{target}{':' + port_val if port_val and port_val != '0' else ''}",
-        "[USER]": data.get('user', ''),
-        "[PASS]": password,
-        "[DOMAIN]": data.get('domain', ''),
-        "[-D]": f"-d {data.get('domain')}" if data.get('domain') else ""
-    }
+    # 2. Path Handling: Ensure we use the absolute path from BASE_DIR
+    relative_path = data.get('path', '')
+    abs_project_path = os.path.join(BASE_DIR, relative_path)
+    
+    tool_type = data.get('tool_type', 'general')
+    raw_password = data.get('password', '')
 
-    exec_cmd = cmd_template
-    for key, val in mapping.items():
-        exec_cmd = exec_cmd.replace(key, val)
+    if not command_template:
+        return jsonify({'status': 'error', 'message': 'Empty command string'})
 
-    # 2. STRICT TOOL DIRECTORY LOGIC
+    # 3. Directory Setup
+    tool_folder = os.path.join(abs_project_path, tool_type)
+    os.makedirs(tool_folder, exist_ok=True)
+
     try:
-        cmd_parts = shlex.split(exec_cmd)
-        if '&&' in cmd_parts:
-            # Handle chained commands
-            last_and_idx = len(cmd_parts) - 1 - cmd_parts[::-1].index('&&')
-            base_tool = cmd_parts[last_and_idx + 1] if (last_and_idx + 1) < len(cmd_parts) else cmd_parts[0]
+        # 4. Flexible Command Construction
+        if target != "SINGLE_RUN":
+            if "sslscan" in command_template or tool_type == "sslscan":
+                exec_cmd = f"sslscan {target}"
+            elif "testssl" in command_template or tool_type == "testssl":
+                exec_cmd = f"testssl.sh --color 1 --quiet --warnings off {target}"
+            elif "gowitness" in command_template:
+                exec_cmd = f"gowitness scan single -u https://{target}"
+            else:
+                # Replace the .txt filename in the command with the actual IP
+                exec_cmd = re.sub(r'[\w\d_-]+\.txt', target, command_template)
         else:
-            base_tool = cmd_parts[0]
+            # If it's a single run, use the command as provided by the user
+            exec_cmd = command_template
 
-        base_tool = os.path.basename(base_tool).lower()
-
-        # SMART NXC SPLIT
-        if base_tool == "nxc" and len(cmd_parts) > 1:
-            proto = cmd_parts[1].lower()   
-            tool_name = f"nxc_{proto}"
-        else:
-            tool_name = base_tool
-
-    except Exception:
-        tool_name = "manual_exec"
-
-    # FORCE PATH: DRAXTER/scans/ToolName
-    tool_dir = os.path.join(SCANS_DIR, tool_name)
-    os.makedirs(tool_dir, exist_ok=True)
-    
-    # 3. Execution
-    try:
+        # 5. Execution Environment
         env = os.environ.copy()
-        env.update({"TERM": "xterm-256color", "CLICOLOR_FORCE": "1"})
-        
-        # Run inside the SCANS_DIR
-        process = subprocess.run(exec_cmd, shell=True, capture_output=True, text=True, timeout=300, cwd=SCANS_DIR, env=env)
-        
-        # Get RAW output (Stdout + Stderr)
-        raw_output = (process.stdout + "\n" + process.stderr).strip()
+        env.update({"TERM": "xterm-256color", "CLICOLOR_FORCE": "1", "COLORTERM": "truecolor"})
 
-        # UI Masking (Only affects HTML/Screenshot, NOT the text file usually)
-        # If you want passwords masked in the text file too, move this block up.
+        # Timeout: 300s (5 mins) for thorough scans
+        process = subprocess.run(exec_cmd, shell=True, capture_output=True, text=True, timeout=300, cwd=abs_project_path, env=env)
+        raw_output = (process.stdout + "\n" + process.stderr).strip()
+        
+        # 6. ANSI to HTML & Masking
         clean_html_fragment = conv.convert(raw_output, full=False)
         display_command = exec_cmd
-        
-        if password and len(password) > 1:
-            display_command = display_command.replace(password, '********')
-            clean_html_fragment = clean_html_fragment.replace(password, '********')
-            # Optional: Mask password in txt file too for safety
-            # raw_output = raw_output.replace(password, '********') 
+        if raw_password and len(raw_password) > 1:
+            display_command = display_command.replace(raw_password, '********')
+            clean_html_fragment = clean_html_fragment.replace(raw_password, '********')
 
-        # File Naming
+        # 7. Filename & Rendering
         timestamp = datetime.now().strftime("%H%M%S")
         safe_target = target.replace(':', '_').replace('.', '_').replace('/', '_')
-        
-        # Define Filenames
-        base_filename = f"{tool_name}_{safe_target}_{timestamp}"
-        png_filename = f"{base_filename}.png"
-        txt_filename = f"{base_filename}.txt"
-        
-        full_screenshot_path = os.path.join(tool_dir, png_filename)
-        full_txt_path = os.path.join(tool_dir, txt_filename)
+        filename = f"{safe_target}_{timestamp}.png"
+        full_output_path = os.path.join(tool_folder, filename)
 
-        # --- SAVE TEXT OUTPUT ---
-        with open(full_txt_path, 'w', encoding='utf-8') as f:
-            f.write(f"COMMAND: {exec_cmd}\n")
-            f.write("-" * 40 + "\n")
-            f.write(raw_output)
-
-        # --- SAVE SCREENSHOT ---
+        # Updated HTML Template (Wider for testssl results)
         html_content = f"""
         <html>
         <head>
             <style>
                 body {{ background-color: #1a1c1e; margin: 0; padding: 30px; display: inline-block; }}
-                .terminal-window {{ background-color: #0d0f11; border-radius: 10px; border: 1px solid #45494e; font-family: 'DejaVu Sans Mono', monospace; min-width: 1200px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); overflow: hidden; }}
+                .terminal-window {{ 
+                    background-color: #0d0f11; border-radius: 10px; border: 1px solid #45494e; 
+                    font-family: 'DejaVu Sans Mono', monospace; min-width: 1200px;
+                    box-shadow: 0 30px 60px rgba(0,0,0,0.5); overflow: hidden;
+                }}
                 .header {{ background-color: #26292c; padding: 10px 15px; border-bottom: 1px solid #3e4246; color: #aaa; font-size: 11px; }}
                 .body {{ padding: 25px; color: #f1f1f1; font-size: 12px; line-height: 1.4; }}
                 .output {{ white-space: pre !important; display: block; margin-top: 15px; font-size: 11px; color: #d1d1d1; }}
@@ -189,7 +170,7 @@ def execute_capture():
         </head>
         <body>
             <div class="terminal-window">
-                <div class="header">kali@draxter: ~/scans/{tool_name}/</div>
+                <div class="header">kali@draxter: ~/{tool_type}</div>
                 <div class="body">
                     <div class="prompt">└─$ <span style="color:#fff;">{display_command}</span></div>
                     <div class="output">{clean_html_fragment}</div>
@@ -198,16 +179,11 @@ def execute_capture():
         </body>
         </html>
         """
-        imgkit.from_string(html_content, full_screenshot_path, options={'quiet': '', 'width': 1300, 'zoom': '0.9'})
+
+        imgkit.from_string(html_content, full_output_path, options={'quiet': '', 'width': 1300, 'zoom': '0.9'})
         
-        return jsonify({
-            'status': 'success', 
-            'filename': png_filename, 
-            'txt_filename': txt_filename, # Return this so UI knows about it
-            'path': tool_name,
-            'target': target
-        })
-        
+        return jsonify({'status': 'success', 'filename': filename, 'target': target})
+
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
 
@@ -217,21 +193,20 @@ def upload():
     p, s = request.form.get('project'), request.form.get('subproject')
     if not p or not s: return redirect(url_for('index'))
     
-    # --- DYNAMIC DIR CREATION ---
-    # Create DRAXTER/scans/Project/Subproject
-    subproject_path = SCANS_DIR
+    subproject_path = os.path.join(BASE_DIR, p, s)
     os.makedirs(subproject_path, exist_ok=True)
+    # Ensure tool folders exist
+    for tool in ['gowitness', 'nxc', 'sslscan', 'testssl']:
+        os.makedirs(os.path.join(subproject_path, tool), exist_ok=True)
 
     files = request.files.getlist('files[]')
     for f in files:
         if f.filename.endswith('.xml') or f.filename.endswith('.nessus'):
-            # Save a copy of the raw file in the scan directory
-            f.save(os.path.join(SCANS_DIR, f.filename))
-            f.seek(0) # Reset pointer for parsing
-            
             try:
                 tree = ET.parse(f)
                 root = tree.getroot()
+
+                # --- CASE 1: NMAP XML ---
                 if root.tag == 'nmaprun':
                     for host in root.findall('host'):
                         addr = host.find('address')
@@ -248,22 +223,45 @@ def upload():
                                     service=srv.get('name') if srv is not None else "unknown",
                                     os=os_name, note="Imported from Nmap"
                                 ))
+
+                # --- CASE 2: NESSUS XML (.nessus) ---
                 elif 'NessusClientData' in root.tag:
-                     for report_host in root.findall('.//ReportHost'):
-                        ip = report_host.get('name')
+                    for report_host in root.findall('.//ReportHost'):
+                        ip = report_host.get('name') # Often the IP or Hostname
+                        
+                        # Extract OS from HostProperties
                         os_name = "Unknown"
+                        properties = report_host.find('HostProperties')
+                        if properties is not None:
+                            for tag in properties.findall('tag'):
+                                if tag.get('name') == 'operating-system':
+                                    os_name = tag.text
+                                if tag.get('name') == 'host-ip': # More accurate IP if name is a hostname
+                                    ip = tag.text
+
+                        # Process open ports/services from ReportItems
+                        # We use a set to avoid duplicate port entries from different plugins
+                        seen_ports = set()
                         for item in report_host.findall('ReportItem'):
-                            if item.get('port') != "0":
+                            port = item.get('port')
+                            protocol = item.get('protocol')
+                            svc_name = item.get('svc_name')
+                            
+                            # Nessus lists "port 0" for general host info; we only want real ports
+                            if port != "0" and (port, protocol) not in seen_ports:
                                 db.session.add(ScanResult(
                                     project=p, subproject=s, ip=ip,
-                                    port=item.get('port'), protocol=item.get('protocol'),
-                                    service=item.get('svc_name'),
+                                    port=port, protocol=protocol,
+                                    service=svc_name,
                                     os=os_name, note="Imported from Nessus"
                                 ))
+                                seen_ports.add((port, protocol))
+
                 db.session.commit()
             except Exception as e:
                 db.session.rollback()
                 print(f"[!] Parsing Error: {e}")
+                
     return redirect(url_for('index'))
 
 @app.route('/update_note', methods=['POST'])
@@ -286,194 +284,100 @@ def delete_row(id):
         db.session.commit()
     return jsonify(status='success')
 
+@app.route('/delete_project', methods=['POST'])
+@login_required
+def delete_project():
+    data = request.json
+    project, subproject, filename = data.get('project'), data.get('subproject'), data.get('filename')
+    target_path = os.path.join(BASE_DIR, project)
+    if subproject: target_path = os.path.join(target_path, subproject)
+    if filename:
+        target_path = os.path.join(target_path, filename)
+        if os.path.exists(target_path) and os.path.isfile(target_path):
+            os.remove(target_path)
+            return jsonify({'status': 'success', 'message': 'File deleted'})
+    if os.path.exists(target_path) and os.path.isdir(target_path):
+        shutil.rmtree(target_path)
+        if not subproject: ScanResult.query.filter_by(project=project).delete()
+        else: ScanResult.query.filter_by(project=project, subproject=subproject).delete()
+        db.session.commit()
+        return jsonify({'status': 'success', 'message': 'Directory deleted'})
+    return jsonify({'status': 'error', 'message': 'Target not found'}), 404
+
 @app.route('/save_to_disk', methods=['POST'])
 @login_required
 def save_to_disk():
-    data = request.json
-    project = data.get('project', 'General')
-    subproject = data.get('subproject', 'Exports')
-    filename = data.get('filename', 'export.txt')
-    lines = data.get('ips', [])
-
-    target_dir = SCANS_DIR
+    d = request.json
+    target_dir = os.path.join(BASE_DIR, d['project'], d['subproject'])
     os.makedirs(target_dir, exist_ok=True)
-    full_path = os.path.join(target_dir, filename)
-
-    try:
-        with open(full_path, 'w') as f:
-            f.write("\n".join(lines))
-        return jsonify(status='success', full_path=full_path)
-    except Exception as e:
-        return jsonify(status='error', message=str(e))
+    full_path = os.path.join(target_dir, d['filename'])
+    with open(full_path, 'w') as f:
+        f.write('\n'.join(d['ips']))
+    return jsonify(status='success', full_path=full_path)
 
 @app.route('/save_xlsx', methods=['POST'])
 @login_required
 def save_xlsx():
     d = request.json
     df = pd.DataFrame(d['rows'])
-    if df.empty: return jsonify(status='error', message='No data')
+    if d.get('group_by_ip'):
+        df['combined'] = df['protocol'] + "/" + df['port'].astype(str) + "/" + df['service']
+        final = df.groupby('ip').agg({'combined': lambda x: '\n'.join(x), 'note': lambda x: ' | '.join(filter(None, set(x)))}).reset_index()
+    else:
+        final = df[d['columns']]
+    out_path = os.path.join(BASE_DIR, d['project'], d['subproject'], "Draxter_Export.xlsx")
+    final.to_excel(out_path, index=False)
+    return jsonify({'status': 'success', 'full_path': os.path.abspath(out_path)})
+
+@app.route('/get_targets', methods=['POST'])
+@login_required
+def get_targets():
+    data = request.json
+    filename = data.get('filename')
+    project_path = data.get('path')
     
-    cols_to_include = d.get('columns', [])
-    final_df = df[cols_to_include]
+    # Construct absolute path using BASE_DIR if project_path is relative
+    if not project_path.startswith('/'):
+        file_path = os.path.join(BASE_DIR, project_path, filename)
+    else:
+        file_path = os.path.join(project_path, filename)
     
-    target_dir = SCANS_DIR
-    os.makedirs(target_dir, exist_ok=True)
-    out_path = os.path.join(target_dir, f"Inventory_{datetime.now().strftime('%Y%m%d')}.xlsx")
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            # Strip \r here too just in case
+            targets = [line.strip().replace('\r', '') for line in f if line.strip()]
+        return jsonify({'status': 'success', 'targets': targets})
     
-    final_df.to_excel(out_path, index=False)
-    return jsonify(status='success', full_path=out_path)
+    return jsonify({'status': 'error', 'message': f'File not found at {file_path}'})
 
 @app.route('/browse/')
 @app.route('/browse/<path:p>')
 @login_required
 def browse(p=''):
-    # Browse inside the scans directory for safety and focus
-    target_path = os.path.join(SCANS_DIR, p)
+    target_path = os.path.join(BASE_DIR, p)
     if not os.path.exists(target_path): abort(404)
-    
     parts = p.split('/') if p else []
     breadcrumbs = []
     curr_path = ""
     for part in parts:
         curr_path = os.path.join(curr_path, part)
         breadcrumbs.append({'name': part, 'path': curr_path.replace("\\", "/")})
-    
     items = []
     for e in os.scandir(target_path):
-        items.append({
-            "name": e.name, 
-            "is_dir": e.is_dir(), 
-            "rel": os.path.relpath(e.path, SCANS_DIR).replace("\\", "/")
-        })
+        items.append({"name": e.name, "is_dir": e.is_dir(), "rel": os.path.relpath(e.path, BASE_DIR).replace("\\", "/")})
     return render_template('browse.html', items=items, breadcrumbs=breadcrumbs, current_path=p)
 
 @app.route('/get_file/<path:filename>')
 @login_required
 def get_file(filename):
-    # Serve files specifically from the scans directory
-    return send_from_directory(SCANS_DIR, filename)
-
-@app.route('/delete_item', methods=['POST'])
-@login_required
-def delete_item():
-    data = request.json
-    rel_path = data.get('path')
-
-    if not rel_path:
-        return jsonify(status='error', message='No path provided')
-
-    # Absolute safe path
-    target_path = os.path.join(SCANS_DIR, rel_path)
-
-    # Security check: block traversal
-    real_scans = os.path.realpath(SCANS_DIR)
-    real_target = os.path.realpath(target_path)
-    if not real_target.startswith(real_scans):
-        return jsonify(status='error', message='Invalid path')
-
-    try:
-        if os.path.isfile(real_target):
-            os.remove(real_target)
-        elif os.path.isdir(real_target):
-            shutil.rmtree(real_target)
-        else:
-            return jsonify(status='error', message='Path not found')
-
-        return jsonify(status='success')
-    except Exception as e:
-        return jsonify(status='error', message=str(e))
-
-@app.route('/delete_rows_bulk', methods=['POST'])
-@login_required
-def delete_rows_bulk():
-    data = request.json
-    ids = data.get('ids', [])
-
-    if not ids:
-        return jsonify(status='error', message='No IDs provided')
-
-    try:
-        ScanResult.query.filter(ScanResult.id.in_(ids)).delete(synchronize_session=False)
-        db.session.commit()
-        return jsonify(status='success')
-    except Exception as e:
-        db.session.rollback()
-        return jsonify(status='error', message=str(e))
-
-''' '''
-
-@app.route('/run_batch', methods=['POST'])
-@login_required
-def run_batch():
-    data = request.json
-    jobs = data.get('jobs', [])
-    
-    if not jobs:
-        return jsonify({'status': 'error', 'message': 'No jobs received'})
-
-    executed_count = 0
-    
-    for job in jobs:
-        try:
-            # 1. Parse Job Details
-            target = job.get('target')
-            exec_cmd = job.get('command')
-            
-            # Simple tool name extraction for folder organization
-            # Uses the first word of command (e.g. 'nmap', 'gowitness')
-            tool_name = exec_cmd.split()[0].lower() if exec_cmd else "batch_tool"
-            tool_dir = os.path.join(SCANS_DIR, tool_name)
-            os.makedirs(tool_dir, exist_ok=True)
-
-            # 2. Execute Command
-            # We set environment variables for color support
-            env = os.environ.copy()
-            env.update({"TERM": "xterm-256color", "CLICOLOR_FORCE": "1"})
-            
-            process = subprocess.run(exec_cmd, shell=True, capture_output=True, text=True, timeout=300, cwd=SCANS_DIR, env=env)
-            raw_output = (process.stdout + "\n" + process.stderr).strip()
-
-            # 3. Create Screenshot
-            clean_html = conv.convert(raw_output, full=False)
-            timestamp = datetime.now().strftime("%H%M%S")
-            safe_target = str(target).replace(':', '_').replace('.', '_')
-            filename = f"batch_{tool_name}_{safe_target}_{timestamp}.png"
-            full_path = os.path.join(tool_dir, filename)
-
-            html_content = f"""
-            <html><body style="background-color: #1a1c1e; padding: 20px; color: #f1f1f1; font-family: monospace;">
-                <div style="border: 1px solid #45494e; padding: 15px; background: #0d0f11;">
-                    <div style="color: #2ecc71;">└─$ {exec_cmd}</div>
-                    <pre style="font-size: 11px;">{clean_html}</pre>
-                </div>
-            </body></html>
-            """
-            
-            # Save the image
-            imgkit.from_string(html_content, full_path, options={'quiet': '', 'width': 1200})
-            
-            executed_count += 1
-
-        except Exception as e:
-            print(f"Error executing job for {target}: {e}")
-            # We continue to the next job even if one fails
-            continue 
-
-    # This return value is what tells the JavaScript to update the counter to "1/1"
-    return jsonify({
-        'status': 'success', 
-        'count': executed_count
-    })
-
-''' '''
-
+    return send_from_directory(BASE_DIR, filename)
 
 @app.errorhandler(401)
 def unauthorized(e): return render_template('error.html', code=401, title="Unauthorized", message="Credentials required."), 401
+
 @app.errorhandler(404)
 def page_not_found(e): return render_template('error.html', code=404, title="Not Found", message="Path does not exist."), 404
 
-
 if __name__ == '__main__':
     with app.app_context(): db.create_all()
-    app.run(debug=True, host='127.0.0.1', port=5000, ssl_context=('cert.pem', 'key.pem'))
+    app.run(debug=False, host='127.0.0.1', port=5000, ssl_context=('cert.pem', 'key.pem'))
