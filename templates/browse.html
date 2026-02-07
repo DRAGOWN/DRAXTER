@@ -99,8 +99,8 @@
                     </a>
                 {% endif %}
                 
-                <a href="/" class="btn btn-sm btn-outline-light d-flex align-items-center gap-2">
-                    <i class="bi bi-cpu"></i> Dashboard
+                <a href="/" class="btn btn-outline-info btn-sm me-2">
+                    <i class="bi bi-cpu"></i> DASHBOARD
                 </a>
             </div>
         </div>
@@ -186,16 +186,17 @@
     </div>
 </div>
 
-    <footer class="text-center pb-5">
-        <hr class="mt-5 mb-4" style="border-top: 1px solid rgba(13, 202, 240, 0.2);">
-        <div class="d-flex align-items-center justify-content-center gap-2">
-            <span class="text-secondary small text-uppercase">Idea by</span>
-            <img src="{{ url_for('static', filename='Dracsec.png') }}" class="footer-logo" alt="Dracsec">
-            <span class="text-secondary small">●</span>
-            <span class="text-secondary small text-uppercase">Made by</span>
-            <img src="{{ url_for('static', filename='Gemini.png') }}" class="footer-logo" alt="Gemini">
+<div class="container-fluid">
+    <footer class="pb-4">
+        <hr class="mt-5 mb-3" style="border-top: 1px solid rgba(13, 202, 240, 0.1);">
+        
+        <div class="d-flex align-items-center justify-content-end gap-2 px-3">
+            <span class="text-white-50 small" style="font-family: 'Consolas', monospace; font-size: 0.8rem;">Powered by</span>
+            <img src="{{ url_for('static', filename='Dracsec-footer.png') }}" class="footer-logo" alt="Dracsec">
         </div>
     </footer>
+</div>
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -254,55 +255,34 @@
 
     // --- CONSOLIDATED DELETE LOGIC ---
     function deleteItem(name, parent, isFile = false) {
-        let msg = "";
-        
-        // Determine the correct message
-        if (isFile) {
-            msg = `Delete file "${name}"?`;
-        } else if (parent === "") {
-            msg = `PERMANENTLY delete project "${name}" and all its data?`;
+    let msg = isFile 
+        ? `Delete file "${name}"?`
+        : `Delete folder "${name}" and ALL its contents?`;
+
+    if (!confirm(msg)) return;
+
+    // Build relative path from scans root
+    let relPath = parent ? parent + '/' + name : name;
+
+    fetch('/delete_item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: relPath })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
         } else {
-            msg = `Delete subproject "${name}" from "${parent}"?`;
+            alert("Error: " + data.message);
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Network error occurred.");
+    });
+}
 
-        if (!confirm(msg)) return;
-
-        // Correctly mapping the payload for the backend
-        let payload = {};
-        if (isFile) {
-            // Path logic: parent is "Project/Subproject", name is "file.png"
-            const pathParts = parent.split('/');
-            payload = {
-                project: pathParts[0],
-                subproject: pathParts.length > 1 ? pathParts[1] : null,
-                filename: name
-            };
-        } else if (parent === "") {
-            // Deleting a root project
-            payload = { project: name, subproject: null };
-        } else {
-            // Deleting a subproject
-            payload = { project: parent, subproject: name };
-        }
-
-        fetch('/delete_project', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                location.reload();
-            } else {
-                alert("Error: " + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Network error occurred.");
-        });
-    }
 </script>
 </body>
 </html>
