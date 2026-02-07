@@ -41,16 +41,17 @@
 2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
-    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL
+    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL, Redis, NFS, etc.
 
-### Improvements in v1.4
-* Improved terminal view (thanks to ansi2html)
-* Added custom command execution
-* Added sslscan
-* Improvements in gowitness target selection process
-* Now DRAXTER speaks in Nessus language:
-   Made DRAXTER compatible to Nessus XML output by the request of our intelligent users.
+### Export Targets:
+* Unique IP Export
+* HTTP(S) Targets Export
+* Customized Columns Export in XLSX 
 
-This is just a beginning 💥
+### Improvements in v1.5
+* Redesigned CMD Execution Windows
+* Terminal screenshot per connection
+* Added protocol enumeration tags
+* Moore targeted templates
 
 <img src="https://raw.githubusercontent.com/DRAGOWN/DRAXTER/refs/heads/main/draxter/static/Welcome.png" align="right" width="200">
