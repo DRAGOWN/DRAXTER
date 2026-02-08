@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>DRAXTER</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='/favicon.ico') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -22,66 +21,84 @@
         .filter-input { background: #334155; border: 1px solid #475569; color: white; font-size: 0.8rem; border-radius: 4px; padding: 2px 5px; width: 100%; }
         
         /* Buttons */
-        .btn-export-navy { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; font-weight: bold; }
-        .btn-export-navy:hover { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; }
-        .btn-upload-cyan { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; border: 1px solid var(--accent-blue) !important; font-weight: 800; text-transform: uppercase; transition: all 0.2s ease; }
-        .btn-upload-cyan:hover { background-color: transparent !important; color: var(--accent-blue) !important; box-shadow: 0 0 10px var(--accent-blue); }
-        .btn-cmd-gen { background-color: var(--draxter-red) !important; color: var(--bg-navy) !important; font-weight: 800; border: none; text-transform: uppercase; }
-        .btn-cmd-gen:hover { background-color: #dc2626 !important; transform: scale(1.02); }
-        .btn-delete { color: #ff4d4d; cursor: pointer; border: none; background: none; transition: 0.2s; }
-        .btn-delete:hover { color: #ff0000; transform: scale(1.2); }
-        .btn-navy-modal { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; font-weight: bold; }
-        .btn-navy-modal:hover { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; }
+        .btn-upload-cyan { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; font-weight: 800; border: none; }
+        .btn-outline-draxter-red { color: #ef4444; border: 1px solid #ef4444; background: transparent; transition: all 0.3s; }
+        .btn-outline-draxter-red:hover { background-color: #ef4444; color: white; }
 
-        /* DataTables Styling */
-        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_info { padding: 0 1%; color: var(--accent-blue) !important; font-size: 0.85rem; opacity: 0.8; text-align: right; float: none !important; }
-        .dataTables_length select { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; border-radius: 4px; padding: 2px; }
-        .dataTables_wrapper .dataTables_paginate { display: flex; justify-content: center; margin: 15px 0 20px 0 !important; float: none !important; }
-        .page-link { background-color: var(--bg-navy) !important; color: var(--accent-blue) !important; border: 1px solid var(--accent-blue) !important; font-weight: bold; }
-        .page-item.active .page-link { background-color: var(--accent-blue) !important; color: var(--bg-navy) !important; border-color: var(--accent-blue) !important; }
-        .page-link:hover { background-color: rgba(13, 202, 240, 0.2) !important; color: white !important; }
+        /* Command Box */
+        .command-box { background: #000; color: #00ff00; padding: 15px; border: 1px solid #444; font-family: 'Fira Code', monospace; min-height: 60px; }
+        .command-box div:focus { outline: none; }
+        .cursor-pointer { cursor: pointer; }
+        
+        /* Toasts */
+        .draxter-toast { background-color: var(--card-navy); color: white; border-left: 4px solid var(--accent-blue); }
+        .toast-header { border-bottom: 1px solid #334155; }    
 
-        /* Form Controls */
-        #currProj, #currSub, .custom-file-input { background-color: var(--bg-navy) !important; color: white !important; border: 1px solid var(--accent-blue) !important; transition: all 0.2s; }
-        .form-control-sm:focus { box-shadow: 0 0 8px rgba(13, 202, 240, 0.4) !important; border-color: var(--accent-blue) !important; outline: none; }
-        input::placeholder { color: rgba(255, 255, 255, 0.3) !important; }
-        .custom-file-input::file-selector-button { background-color: var(--bg-navy); color: var(--accent-blue); border: none; border-right: 1px solid var(--accent-blue); padding: 0.2rem 0.75rem; margin-right: 10px; font-weight: bold; }
-        .custom-file-input::file-selector-button:hover { background-color: var(--accent-blue); color: var(--bg-navy); cursor: pointer; }
+        /* Badges */
+        .badge-outline-red { background: transparent !important; border: 1px solid #ef4444 !important; color: #ef4444 !important; font-weight: 600; }
+        
+        /* File Input */
+        #fileInput::file-selector-button { background-color: var(--accent-blue); color: var(--bg-navy); border: none; padding: 0.2rem 0.75rem; margin-right: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .custom-file-input { background-color: #0f172a !important; border: 1px solid #334155 !important; color: #94a3b8 !important; }
 
-        /* Components */
-        .logo-header { max-height: 65px; margin-bottom: 20px; }
-        .editable-note { background: #0f172a; border: 1px solid #475569; padding: 5px; min-width: 150px; border-radius: 4px; }
-        .sticky-filter-row { background: var(--card-navy); position: sticky; top: 0; z-index: 10; }
-        .command-box { 
-            background: #000; 
-            color: #00ff00; 
-            padding: 15px; 
-            border-radius: 5px; 
-            font-family: 'Fira Code', monospace;
-            border: 1px solid #444;
-            min-height: 80px;
-            cursor: text;
-        }
-/* Ensure the editable area doesn't have a weird white border when clicked */
-#cmdText:focus {
-    outline: none;
-}
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-        .draxter-toast { background-color: var(--card-navy); color: var(--text-main); border-left: 4px solid var(--accent-blue); min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-        .footer-logo { height: 24px; width: auto; object-fit: contain; filter: drop-shadow(0 0 2px var(--accent-blue)); }
+        /* DataTables Customization - Cyan Theme */
+        .dataTables_wrapper .dataTables_paginate .paginate_button { padding: 0 !important; margin: 0 4px !important; border: none !important; background: transparent !important; }
+        .dataTables_wrapper .pagination .page-link { background-color: transparent !important; color: #0dcaf0 !important; border: 1px solid #0dcaf0 !important; font-size: 0.875rem !important; padding: 0.25rem 0.5rem !important; border-radius: 4px !important; transition: all 0.2s; }
+        .dataTables_wrapper .pagination .page-item.active .page-link { background-color: #0dcaf0 !important; color: #000 !important; border-color: #0dcaf0 !important; font-weight: bold; }
+        .dataTables_wrapper .pagination .page-link:hover { background-color: rgba(13, 202, 240, 0.2) !important; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled { opacity: 0.5; }
+        
+        .dataTables_length {
+	    color: #94a3b8 !important; /* Muted text color for "Show X entries" */
+	}
+
+	/* Style the actual Dropdown Select Box */
+	.dataTables_length select {
+	    background-color: #1e293b !important; /* Dark Navy Background */
+	    color: #0DCAF0 !important;           /* Cyan Text */
+	    border: 1px solid #334155 !important; /* Subtle Border */
+	    padding: 4px 8px;
+	    border-radius: 4px;
+	    margin: 0 8px; /* Spacing between "Show" and the box */
+	}
+
+	/* Focus state for the dropdown */
+	.dataTables_length select:focus {
+	    outline: none;
+	    border-color: #0DCAF0 !important;
+	    box-shadow: 0 0 5px rgba(13, 202, 240, 0.5);
+	}
+        .dataTables_info { width: 100%; text-align: center !important; margin-top: 5px; color: #94a3b8 !important; }
+        
+        /* Footer Logo Styling */
+	.footer-logo {
+	    height: 35px; /* Perfect height for a signature logo */
+	    width: auto;  /* Maintain aspect ratio */
+	    opacity: 0.8; /* Slight transparency to blend with dark mode */
+	    transition: opacity 0.3s ease;
+	}
+
+	.footer-logo:hover {
+	    opacity: 1; /* Brighten on hover */
+	}
     </style>
 </head>
 <body class="p-4">
 
-<div class="container-fluid text-center">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="draxter Logo" class="logo-header">
-</div>
-
 <div class="container-fluid">
     <div class="d-flex justify-content-between mb-3 align-items-center">
-        <h4 class="text-white"></h4>
+        <h4 class="text-white fw-bold"></i>
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/static/logo.png" alt="DRAXTER" style="height: 40px; width: auto;" class="me-2">
+        </a>
+        </h4>
         <div>
-            <a href="/browse" class="btn btn-export-navy btn-sm me-2"><i class="bi bi-folder2-open"></i></a>
+            <button class="btn btn-outline-danger btn-sm me-2" onclick="deleteSelectedRows()">
+                <i class="bi bi-trash3"></i> CLEAN SELECTED
+            </button>
+            <a href="/browse" class="btn btn-outline-info btn-sm me-2">
+                <i class="bi bi-folder2-open"></i> FILESYSTEM
+            </a>
             <a href="/logout" class="btn btn-outline-danger btn-sm">LOGOUT</a>
         </div>
     </div>
@@ -89,77 +106,78 @@
     <div class="card p-3 mb-4 shadow-lg">
         <form action="/upload" method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
             <div class="col-md-2">
-                <label class="small fw-bold opacity-75 text-uppercase" style="color: var(--accent-blue);">Project</label>
-                <input type="text" name="project" id="currProj" class="form-control form-control-sm" placeholder="CLIENT-01" required>
+                <label class="small fw-bold text-info">PROJECT</label>
+                <input type="text" name="project" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="CLIENT" required>
             </div>
             <div class="col-md-2">
-                <label class="small fw-bold opacity-75 text-uppercase" style="color: var(--accent-blue);">Subproject</label>
-                <input type="text" name="subproject" id="currSub" class="form-control form-control-sm" placeholder="EXTERNAL" required>
+                <label class="small fw-bold text-info">SUBPROJECT</label>
+                <input type="text" name="subproject" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="EXTERNAL" required>
             </div>
-            <div class="col-md-5">
-                <label class="bi bi-folder2-open small fw-bold opacity-75" style="color: var(--accent-blue);"> Nmap XML Input</label>
+            <div class="col-md-4">
+                <label class="small fw-bold text-info">NMAP/NESSUS XML</label>
                 <input type="file" name="files[]" id="fileInput" class="form-control custom-file-input form-control-sm" multiple required>
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-upload-cyan btn-sm w-100">UPLOAD & PARSE</button>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-upload-cyan btn-sm w-100">UPLOAD</button>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <div class="dropdown w-100">
+                    <button class="btn btn-outline-info btn-sm w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">EXPORT</button>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow">
+                        <li><h6 class="dropdown-header text-info">Raw Lists</h6></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportFlexible('ip')"><i class="bi bi-list-ul"></i> IP List (Unique)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="exportFlexible('url')"><i class="bi bi-link-45deg"></i> URL List (HTTP/S)</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><h6 class="dropdown-header text-danger">Report Formats</h6></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#excelModal"><i class="bi bi-file-earmark-excel"></i> XLSX (Custom Columns)</a></li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-outline-draxter-red btn-sm w-100" onclick="openCmdModal()">
+                    <i class="bi bi-terminal-fill"></i> CMD
+                </button>
             </div>
         </form>
-        
-        <div class="mt-3 d-flex gap-2">
-            <div class="btn-group">
-                <button class="btn btn-export-navy btn-sm dropdown-toggle" data-bs-toggle="dropdown">EXPORT</button>
-                <ul class="dropdown-menu dropdown-menu-dark shadow">
-                    <li><a class="dropdown-item" href="#" onclick="saveTargets('ip')">IP Address Format [.txt]</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" onclick="saveTargets('url')">HTTP(S) Format [.txt]</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#xlsxModal">Excel Spreadsheet (XLSX)</a></li>
-                </ul>
-            </div>
-            <button class="btn btn-cmd-gen btn-sm" onclick="generateCmd()">
-                <i class="bi bi-terminal-fill me-1"></i> COMMAND 
-            </button>
-        </div>
     </div>
 
-    <div class="card shadow-lg overflow-hidden">
-        <table id="scanTable" class="table table-dark table-hover mb-0">
+    <div class="card shadow-lg">
+        <table id="scanTable" class="table table-dark table-hover mb-0" style="font-size: 0.9rem;">
             <thead>
                 <tr>
-                    <th style="width: 35px;"><input type="checkbox" id="selectAll"></th>
-                    <th>PROJECT</th><th>SUBPROJECT</th><th>IP ADDRESS</th><th>OS</th><th>PORT</th><th>PROTO</th><th>SERVICE</th><th>NOTES</th>
-                    <th style="width: 50px;"><i class="bi bi-trash"></i></th>
+                    <th style="width: 5px;" class="text-left"><input type="checkbox" id="selectAll"></th>
+                    <th>PROJECT</th><th>SUB</th><th>IP</th><th>OS</th><th>PORT</th><th>PROTO</th><th>SERVICE</th><th>NOTES</th>
+                    <th style="width: 40px;"></th>
                 </tr>
                 <tr class="sticky-filter-row">
                     <th></th>
                     <th><input type="text" class="filter-input"></th>
                     <th><input type="text" class="filter-input"></th>
-                    <th><input type="text" class="filter-input" placeholder="Regex ^ $"></th>
-                    <th><input type="text" class="filter-input" placeholder="OS"></th>
-                    <th><input type="text" class="filter-input" id="portFilter" placeholder="Port"></th>
                     <th><input type="text" class="filter-input"></th>
                     <th><input type="text" class="filter-input"></th>
-                    <th><input type="text" class="filter-input" placeholder="Search Notes..."></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input"></th>
+                    <th><input type="text" class="filter-input"></th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in scan_data %}
-                <tr id="row-{{row.id}}" data-ip="{{row.ip}}" data-port="{{row.port}}" data-service="{{row.service}}">
+                <tr data-id="{{row.id}}" data-ip="{{row.ip}}" data-port="{{row.port}}" data-service="{{row.service}}">
+                    <!--- <td class="text-center"><input type="checkbox" class="row-check"></td> --->
                     <td><input type="checkbox" class="row-check"></td>
                     <td>{{row.project}}</td>
-                    <td><small>{{row.subproject}}</small></td>
+                    <td>{{row.subproject}}</td>
                     <td class="text-info fw-bold">{{row.ip}}</td>
-                    <td class="text-white-50 small"><i class="bi bi-cpu"></i> {{ row.os if row.os else 'Unknown' }}</td>
+                    <td class="small">{{ row.os if row.os else '-' }}</td>
                     <td><span class="badge bg-secondary">{{row.port}}</span></td>
-                    <td>{{row.protocol}}</td>
+                    <td><span class="">{{row.protocol}}</span></td>
                     <td>
                         <a href="https://duckduckgo.com/?q={{row.port}}+{{row.protocol}}+(pentest|hacking|exploit)" target="_blank" class="text-decoration-none">
                             <span class="badge bg-secondary"><i class="bi bi-search" style="font-size: 0.7rem;"></i> {{row.service}}</span>
                         </a>
                     </td>
-                    <td contenteditable="true" class="editable-note" data-id="{{row.id}}">{{row.note}}</td>
-                    <td><button class="btn-delete" onclick="deleteRow({{row.id}})"><i class="bi bi-x-circle-fill"></i></button></td>
+                    <td contenteditable="true" class="editable-note">{{row.note}}</td>
+                    <td><i class="bi bi-trash text-danger cursor-pointer text-left" onclick="deleteRow({{row.id}})"></i></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -167,28 +185,29 @@
     </div>
 </div>
 
-<div class="modal fade" id="xlsxModal" tabindex="-1">
+<div class="modal fade" id="excelModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
+        <div class="modal-content bg-dark text-white border-secondary">
             <div class="modal-header border-secondary">
-                <h5>Excel Export Configuration</h5>
+                <h5 class="modal-title text-success"><i class="bi bi-file-earmark-excel"></i> XLSX Column Selection</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="groupIPCheck">
-                    <label class="form-check-label">Unite services per IP</label>
-                </div>
-                <div class="row px-2">
-                    <div class="col-6"><input type="checkbox" class="col-chk" value="ip" checked> IP</div>
-                    <div class="col-6"><input type="checkbox" class="col-chk" value="os" checked> OS</div>
-                    <div class="col-6"><input type="checkbox" class="col-chk" value="port" checked> Port</div>
-                    <div class="col-6"><input type="checkbox" class="col-chk" value="service" checked> Service</div>
-                    <div class="col-6"><input type="checkbox" class="col-chk" value="note" checked> Note</div>
+                <p class="small text-muted mb-3">Choose the columns you want to include in the generated file:</p>
+                <div class="row g-3" id="excelColumnChoices">
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="project" id="col_proj" checked><label class="form-check-label" for="col_proj">Project</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="subproject" id="col_sub" checked><label class="form-check-label" for="col_sub">Sub-Project</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="ip" id="col_ip" checked><label class="form-check-label" for="col_ip">IP Address</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="os" id="col_os" checked><label class="form-check-label" for="col_os">OS</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="port" id="col_port" checked><label class="form-check-label" for="col_port">Port</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="protocol" id="col_proto" checked><label class="form-check-label" for="col_proto">Protocol</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="service" id="col_serv" checked><label class="form-check-label" for="col_serv">Service</label></div></div>
+                    <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" value="note" id="col_note" checked><label class="form-check-label" for="col_note">Notes</label></div></div>
                 </div>
             </div>
             <div class="modal-footer border-secondary">
-                <button class="btn btn-navy-modal w-100" onclick="processXlsx()">GENERATE XLSX</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="exportToExcel()">Generate XLSX</button>
             </div>
         </div>
     </div>
@@ -198,102 +217,105 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content bg-dark text-white">
             <div class="modal-header border-secondary">
-                <h5>CLI Integration</h5>
+                <h5 class="text-info"><b class="bi bi-terminal text-danger"> CMD</b></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <select id="toolType" class="form-select bg-secondary text-white border-0 mb-3" onchange="updateCmd()">
-                    <option value="gowitness">Gowitness (Screenshots)</option>
-                    <option value="sslscan">SSLScan</option>
-                    <option value="nxc_webdav">NXC WebDAV</option>
-                    <option value="nxc_rdp">NXC RDP (Screenshots)</option>
-                    <option value="nxc_smb">NXC SMB (Shares)</option>
-                    <option value="nxc_wmi">NXC WMI</option>
-                    <option value="nxc_ftp">NXC FTP</option>
-                    <option value="nxc_ssh">NXC SSH</option>
-                    <option value="nxc_vnc">NXC VNC</option>
-                    <option value="nxc_winrm">NXC WinRM</option>
-                    <option value="nxc_nfs">NXC NFS</option>
-                    <option value="nxc_mssql">NXC MSSQL</option>
-                    <option value="nxc_ldap">NXC LDAP</option>
-                    <option value="custom">CUSTOM COMMAND</option>
-                </select>
-                
-                <div class="row g-3 mb-3">
+                <div class="row g-2 mb-3">
                     <div class="col-md-4">
-                        <label class="form-label small text-secondary">USERNAME</label>
-                        <input type="text" id="cmdUser" class="form-control form-control-sm bg-dark text-info border-secondary" placeholder="admin" oninput="updateCmd()">
+                        <label class="small text-secondary text-uppercase">User [USER]</label>
+                        <input type="text" id="cmdUser" class="form-control form-control-sm bg-black text-info border-secondary">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label small text-secondary">PASSWORD</label>
-                        <div class="input-group input-group-sm">
-                            <input type="password" id="cmdPass" class="form-control bg-dark text-info border-secondary" placeholder="password123" oninput="updateCmd()">
-                            <button class="btn btn-outline-secondary border-secondary" type="button" onclick="togglePassword()">
-                                <i class="bi bi-eye" id="toggleIcon"></i>
-                            </button>
-                        </div>
+                        <label class="small text-secondary text-uppercase">Pass [PASS]</label>
+                        <input type="password" id="cmdPass" class="form-control form-control-sm bg-black text-info border-secondary">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label small text-secondary">DOMAIN / WORKGROUP</label>
-                        <input type="text" id="cmdDomain" class="form-control form-control-sm bg-dark text-info border-secondary" placeholder="." oninput="updateCmd()">
+                        <label class="small text-secondary text-uppercase">Domain/IP [DOMAIN]</label>
+                        <input type="text" id="cmdDomain" class="form-control form-control-sm bg-black text-info border-secondary">
                     </div>
-                </div>
-                
-                <div class="command-box mb-3">
-                    <div id="cmdText" 
-                         contenteditable="true" 
-                         spellcheck="false" 
-                         style="word-break: break-all; width: 100%;">
-                    </div>
-                </div>
-                <div id="jobPanel" class="mt-3 pt-3 border-top" style="display:none;">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-warning mb-0 small uppercase"><i class="bi bi-cpu-fill"></i> Pipeline Status</h6>
-                        <span class="badge bg-dark border border-secondary text-info" id="jobCount">0 / 0</span>
-                    </div>
-                    <div id="jobList" class="bg-black rounded p-2" style="max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.8rem;">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-body">
-                            <div id="cmdText" class="p-3 bg-dark text-success rounded border border-secondary mb-3" style="font-family: monospace;">
-                    Select a tool...
                 </div>
 
-                <div id="jobPanel" class="mt-3 pt-3 border-top" style="display:none;">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="text-warning mb-0 small"><i class="bi bi-cpu-fill"></i> ACTIVE PIPELINE</h6>
-                        <span class="badge bg-dark border border-secondary text-info" id="jobCount">0 / 0</span>
+                <label class="small text-secondary">COMMAND</label>
+                <div class="command-box mb-2">
+                    <div id="cmdText" contenteditable="true" spellcheck="false" style="width: 100%;"></div>
+                </div>
+                
+                <div class="d-flex gap-2 mb-3 flex-wrap">
+                
+                <!-- CLEAN -->
+                    <div><span class="badge bg-success cursor-pointer" onmousedown="event.preventDefault(); clearCmd()">CLEAN</span></div>
+                    
+                     
+		<!-- TOOLS -->
+                    <div><span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('gowitness scan single -u http://[TARGET][:PORT] --screenshot-path gowitness/')">GOWITNESS</span>
+                    <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc rdp [TARGET] -u [USER] -p [PASS] -d [DOMAIN] --screenshot; mv ~/.nxc/screenshots/*$(date -I)*.png ~/DRAXTER/scans/nxc/. 2>/dev/null')">RDP</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('sslscan -u https://[TARGET]:[PORT]')">SSL</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc smb [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">SMB</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc wmi [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">RPC</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc ftp [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">FTP</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc ssh [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">SSH</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc vnc [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">VNC</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc winrm [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">WinRM</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc nfs [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">NFS</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc mssql [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">MSSQL</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc ldap [TARGET] -d [DOMAIN] -u [USER] -p [PASS]')">LDAP</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nxc smb [TARGET] -d [DOMAIN] -u [USER] -p [PASS] -M webdav')">WebDAV</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('snmp-check [TARGET]')">SNMP</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('ike-scan -M [TARGET]')">IKE</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('showmount -e [TARGET]')">NFS</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('redis-cli -h [TARGET] -p [PORT] PING ')">Redis</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('telnet [TARGET] [PORT]')">Telnet</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('nc [TARGET] [PORT]')">Netcat</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('whois http://[TARGET][:PORT]')">WHOIS</span>
+                     <span class="badge bg-danger cursor-pointer" onmousedown="event.preventDefault(); insertVar('dig axfr [TARGET] @[DOMAIN]')">Zone</span>
+                     </div>
+                    
+                
+                <!-- TAGS -->
+                    <div>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[TARGET]')">[TARGET]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[:PORT]')">[:PORT]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[PORT]')">[PORT]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[URL]')">[URL]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[USER]')">[USER]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[PASS]')">[PASS]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('[DOMAIN]')">[DOMAIN]</span>
+                    <span class="badge bg-primary cursor-pointer" onmousedown="event.preventDefault(); insertVar('-u \'\' -p \'\'')">[Anonym]</span>
                     </div>
-                    <div class="progress mb-2" style="height: 5px; background-color: #111;">
-                        <div id="jobProgressBar" class="progress-bar bg-info" style="width: 0%"></div>
+              
+                </div>
+                
+
+                <div id="jobPanel" style="display:none;">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-warning">EXECUTION PIPELINE</span>
+                        <span id="jobCount" class="text-info">0 / 0</span>
                     </div>
-                    <div id="jobList" class="bg-black rounded p-2" style="max-height: 150px; overflow-y: auto; border: 1px solid #333;">
-                        </div>
+                    <div id="jobList" class="bg-black border border-secondary rounded p-2" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;"></div>
                 </div>
             </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-outline-warning" id="runBatchBtn" onclick="executeAndCapture()">
-                    <i class="bi bi-camera-reels"></i> RUN & SHOT
+            <div class="modal-footer border-secondary">
+                <button class="btn btn-warning w-100 fw-bold" id="runBatchBtn" onclick="executeBatch()">
+                    <i class="bi bi-lightning-fill"></i> EXECUTE
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="toast-container" id="toastPlacement"></div>
+<div class="container-fluid">
+    <footer class="pb-4">
+        <hr class="mt-5 mb-3" style="border-top: 1px solid rgba(13, 202, 240, 0.1);">
+        
+        <div class="d-flex align-items-center justify-content-end gap-2 px-3">
+            <span class="text-white-50 small" style="font-family: 'Consolas', monospace; font-size: 0.8rem;">Powered by</span>
+            <img src="{{ url_for('static', filename='Dracsec-footer.png') }}" class="footer-logo" alt="Dracsec">
+        </div>
+    </footer>
+</div>
 
-<footer class="text-center pb-5">
-    <hr class="mt-5 mb-4" style="border-top: 1px solid rgba(13, 202, 240, 0.2);">
-    <div class="d-flex align-items-center justify-content-center gap-2">
-        <span class="text-secondary small text-uppercase">Idea by</span>
-        <img src="{{ url_for('static', filename='Dracsec.png') }}" class="footer-logo" alt="Dracsec">
-        <span class="text-secondary small">●</span>
-        <span class="text-secondary small text-uppercase">Made by</span>
-        <img src="{{ url_for('static', filename='Gemini.png') }}" class="footer-logo" alt="Gemini">
-    </div>
-</footer>
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastPlacement" style="z-index: 9999;"></div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -302,399 +324,412 @@
 
 <script>
 let table;
-$(document).ready(function() {
-    table = $('#scanTable').DataTable({ dom: 'lrtip', pageLength: 50, columnDefs: [{ targets: [0, 9], orderable: false }] });
 
+$(document).ready(function() {
+    // 1. Unified Table Initialization
+    table = $('#scanTable').DataTable({
+        "pageLength": 50,
+        "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+        "pagingType": "simple_numbers",
+        "dom": '<"d-flex justify-content-center mb-3"l>rt<"bottom d-flex flex-column align-items-center mt-4"ip><"clear">',
+        "columnDefs": [
+            { "targets": [0, 9], "orderable": false } 
+        ],
+        "language": {
+            "paginate": {
+                "previous": "<i class='bi bi-chevron-left'></i>",
+                "next": "<i class='bi bi-chevron-right'></i>"
+            },
+            "info": "Showing _START_ to _END_ of _TOTAL_ targets",
+            "lengthMenu": "Show _MENU_ entries"
+        }
+    });
+
+    // 2. Sticky Filter Logic
     $('#scanTable thead .sticky-filter-row th').each(function(i) {
         $('input', this).on('keyup change clear', function() {
-            if (table.column(i).search() !== this.value) table.column(i).search(this.value, true, false).draw();
+            if (table.column(i).search() !== this.value) {
+                table.column(i).search(this.value, true, false).draw();
+            }
         });
     });
 
-    $('#selectAll').click(function() { $('input.row-check', table.rows({search:'applied'}).nodes()).prop('checked', this.checked); });
+    // 3. Advanced Selection Logic (The "Smart" Checkbox)
+    
+    // Header checkbox: Select/Deselect visible rows
+    $('#selectAll').on('change', function() {
+        const isChecked = $(this).is(':checked');
+        // Only target rows that match the current filter
+        const visibleRows = table.rows({ search: 'applied' }).nodes();
+        $('input.row-check', visibleRows).prop('checked', isChecked);
+    });
+
+    // Row checkboxes: Update the Header checkbox state
+    $('#scanTable tbody').on('change', '.row-check', function() {
+        const totalVisible = table.rows({ search: 'applied' }).count();
+        const checkedCount = table.$('.row-check:checked', { search: 'applied' }).length;
+        const mainBox = document.getElementById('selectAll');
+
+        if (mainBox) {
+            // Main box is checked if at least one is checked
+            mainBox.checked = checkedCount > 0;
+
+            // Add the "dash" (indeterminate) state if some but not all are selected
+            if (checkedCount > 0 && checkedCount < totalVisible) {
+                mainBox.indeterminate = true;
+            } else {
+                mainBox.indeterminate = false;
+            }
+        }
+    });
+
+    // 4. Auto-save Notes
     $(document).on('blur', '.editable-note', function() {
-        fetch('/update_note', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id:$(this).data('id'), note:$(this).text()}) });
+        const row = $(this).closest('tr');
+        const noteText = $(this).text().trim();
+        
+        fetch('/update_note', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({
+                id: row.data('id'), 
+                note: noteText
+            }) 
+        }).then(response => {
+            if (!response.ok) console.error("Failed to auto-save note.");
+        });
     });
 });
 
+// --- HELPER FUNCTIONS ---
+
+function openCmdModal() {
+    var myModal = new bootstrap.Modal(document.getElementById('cmdModal'));
+    myModal.show();
+}
+
+function insertVar(text) {
+    const el = document.getElementById('cmdText');
+    el.innerText += text + " ";
+    el.focus();
+}
+
+function clearCmd() {
+    const el = document.getElementById('cmdText');
+    el.innerText = "";
+    el.focus();
+}
+
 function showToast(title, message) {
     const id = Date.now();
-    $('#toastPlacement').append(`<div id="toast-${id}" class="toast draxter-toast show p-3 mb-2"><div class="d-flex justify-content-between"><strong class="text-info">${title}</strong><button class="btn-close btn-close-white" onclick="$('#toast-${id}').remove()"></button></div><div class="toast-body">${message}</div></div>`);
-    setTimeout(() => { $(`#toast-${id}`).fadeOut(500, function() { $(this).remove(); }); }, 4000);
+    const toastHtml = `
+        <div id="t-${id}" class="toast draxter-toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-dark text-white border-secondary">
+                <i class="bi bi-info-circle-fill text-info me-2"></i>
+                <strong class="me-auto">${title}</strong>
+                <button type="button" class="btn-close btn-close-white" onclick="$('#t-${id}').remove()"></button>
+            </div>
+            <div class="toast-body bg-dark text-white-50">${message}</div>
+        </div>`;
+    $('#toastPlacement').append(toastHtml);
+    setTimeout(() => { $(`#t-${id}`).fadeOut(500, function() { $(this).remove(); }); }, 5000);
+}
+
+function getTargetRows() {
+    let rows = table.rows({search:'applied'}).nodes().toArray().filter(n => $(n).find('.row-check').is(':checked'));
+    return rows.length > 0 ? rows : table.rows({search:'applied'}).nodes().toArray();
 }
 
 function getTableContext() {
     const firstRow = document.querySelector('#scanTable tbody tr');
-    if (!firstRow) return { p: null, s: null };
-    return { 
-        p: firstRow.cells[1].innerText.trim(), 
-        s: firstRow.cells[2].innerText.trim() 
-    };
+    if (!firstRow) return { p: 'General', s: 'Default' };
+    return { p: firstRow.cells[1].innerText.trim(), s: firstRow.cells[2].innerText.trim() };
 }
 
-function getRows() {
-    let checked = table.rows({search:'applied'}).nodes().toArray().filter(n => $(n).find('.row-check').is(':checked'));
-    return checked.length > 0 ? checked : table.rows({search:'applied'}).nodes().toArray();
-}
+// --- BULK DELETE ---
+$('#selectAll').on('click', function() {
+    // This ensures that even rows not currently visible on the page are selected/deselected
+    const rows = table.rows({ 'search': 'applied' }).nodes();
+    $('input.row-check', rows).prop('checked', this.checked);
+});
 
-function updateModalContent() {
-    const img = currentImages[currentIndex];
-    const imageUrl = '/get_file/' + img.rel;
+// 2. Fixed Bulk Delete Function
+function deleteSelectedRows() {
+    const selectedIds = [];
     
-    // Select the image element
-    const $previewImg = $('#modalPreviewImg');
-
-    // Add an error handler to catch path issues
-    $previewImg.on('error', function() {
-        console.error("Failed to load image at: " + imageUrl);
-        showToast("Error", "Could not load image. Check file permissions.");
+    // Use DataTables API to find checked boxes across ALL pages (if searched/filtered)
+    table.rows({ search: 'applied' }).nodes().to$().each(function() {
+        const checkbox = $(this).find('.row-check');
+        if (checkbox.is(':checked')) {
+            const rowId = $(this).closest('tr').data('id');
+            if (rowId) selectedIds.push(rowId);
+        }
     });
 
-    $previewImg.attr('src', imageUrl);
-    $('#imageModalLabel').text(img.name + ` (${currentIndex + 1} / ${currentImages.length})`);
-    $('#imagePathDisplay').text('Path: ' + img.rel);
-}
-
-function runCommand() {
-    const cmd = $('#cmdText').text();
-    const runBtn = $('#runCmdBtn');
-
-    if (!cmd || cmd === "Select a tool...") {
-        showToast("Error", "Generate a command first!");
+    if (selectedIds.length === 0) {
+        showToast("Action Required", "No rows selected. Check the boxes first.");
         return;
     }
 
-    if (!confirm("Initiate attack execution on system shell?")) return;
+    if (!confirm(`Are you sure you want to permanently delete ${selectedIds.length} records?`)) {
+        return;
+    }
 
-    // Loading State
-    runBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> RUNNING...');
-
-    fetch('/execute_command', {
+    // matched to your original backend endpoint name
+    fetch('/delete_rows_bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: cmd })
+        body: JSON.stringify({ ids: selectedIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Remove the rows from the table view without a full page refresh
+            selectedIds.forEach(id => {
+                table.row($(`tr[data-id="${id}"]`)).remove();
+            });
+            table.draw(false);
+            
+            // Reset the 'Select All' checkbox
+            $('#selectAll').prop('checked', false);
+            
+            showToast("Cleaned", `Successfully removed ${selectedIds.length} rows.`);
+        } else {
+            showToast("Error", data.message || "Failed to delete rows.");
+        }
+    })
+    .catch(err => {
+        console.error("Bulk Delete Error:", err);
+        showToast("Error", "Backend connection failed.");
+    });
+}
+
+// --- SINGLE DELETE ---
+function deleteRow(id) {
+    if (!confirm("Delete this row?")) return;
+    fetch(`/delete_row/${id}`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const row = $(`tr[data-id="${id}"]`);
+            table.row(row).remove().draw(false);
+            showToast("Deleted", "Row removed.");
+        }
+    });
+}
+
+// --- EXCEL EXPORT ---
+function exportToExcel() {
+    const selectedCols = [];
+    $('#excelColumnChoices input:checked').each(function() { selectedCols.push($(this).val()); });
+    
+    const rows = getTargetRows();
+    const dataPayload = rows.map(n => {
+        const row = $(n);
+        return {
+            project: row.find('td:eq(1)').text().trim(),
+            subproject: row.find('td:eq(2)').text().trim(),
+            ip: row.data('ip'),
+            os: row.find('td:eq(4)').text().trim(),
+            port: row.data('port'),
+            protocol: row.find('td:eq(6)').text().trim(),
+            service: row.find('td:eq(7)').text().trim(),
+            note: row.find('td:eq(8)').text().trim()
+        };
+    });
+
+    const { p, s } = getTableContext();
+
+    fetch('/save_xlsx', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ project: p, subproject: s, columns: selectedCols, rows: dataPayload })
     })
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
-            showToast("System", "Command sent to background! Results will appear in Browse.");
-            // Optional: Close modal automatically on success
-            bootstrap.Modal.getInstance('#cmdModal').hide();
-        } else {
-            showToast("Error", data.message);
+            bootstrap.Modal.getInstance(document.getElementById('excelModal')).hide();
+            showToast("Success", "Excel file saved to project folder.");
         }
-    })
-    .catch(err => showToast("Error", "Execution failed: " + err))
-    .finally(() => {
-        // Reset button
-        runBtn.prop('disabled', false).html('<i class="bi bi-play-fill"></i> EXECUTE NOW');
     });
 }
 
-async function executeAndCapture() {
-    const cmdText = $('#cmdText').text().trim();
-    const tool = $('#toolType').val();
-    const pass = $('#cmdPass').val();
-    
-    // Ensure we have a file selected
-    if (!window.lastF) {
-        return showToast("Error", "Please select a target file from the browser first.");
-    }
-
-    // Extract the relative path and filename
-    // Example: lastF = "Project1/Sub1/ips.txt"
-    const pathParts = window.lastF.split('/');
-    const fileName = pathParts.pop();
-    const relPath = pathParts.join('/'); 
-
-    // 1. Fetch the list of targets from the file
-    const tReq = await fetch('/get_targets', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ filename: fileName, path: relPath })
-    });
-    const tData = await tReq.json();
-
-    let targets = [];
-    if (tData.status === 'success' && tData.targets.length > 0) {
-        targets = tData.targets.map(t => t.trim()).filter(t => t.length > 0);
-    } else {
-        // Fallback for manual runs or empty files
-        targets = ["SINGLE_RUN"];
-    }
-
-    // 2. UI Setup
-    $('#jobPanel').fadeIn();
-    $('#jobList').empty();
-    const $btn = $('#runBatchBtn');
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> RUNNING...');
-
-    // 3. Sequential Execution Loop
-    for (let i = 0; i < targets.length; i++) {
-        const currentTarget = targets[i];
-        const jobId = `job-${i}`;
-
-        $('#jobList').prepend(`
-            <div id="${jobId}" class="d-flex justify-content-between border-bottom border-secondary py-1 px-2 mb-1">
-                <span class="text-info small">${currentTarget}</span>
-                <span class="status"><span class="spinner-border spinner-border-sm text-warning"></span></span>
-            </div>
-        `);
-
-        try {
-            const response = await fetch('/execute_capture', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    command: cmdText, 
-                    path: relPath, 
-                    tool_type: tool, 
-                    password: pass,
-                    single_target: currentTarget 
-                })
-            });
-            
-            const result = await response.json();
-            if (result.status === 'success') {
-                $(`#${jobId} .status`).html('<i class="bi bi-check-lg text-success"></i>');
-            } else {
-                $(`#${jobId} .status`).html(`<i class="bi bi-x-lg text-danger" title="${result.message}"></i>`);
-            }
-        } catch (err) {
-            $(`#${jobId} .status`).html('<i class="bi bi-bug text-danger"></i>');
-        }
-        
-        $('#jobCount').text(`${i + 1} / ${targets.length}`);
-    }
-
-    $btn.prop('disabled', false).html('<i class="bi bi-camera-reels"></i> RUN & SHOT');
-}
-
-function saveTargets(type) {
+// --- RAW EXPORT (Fixed the cut-off part) ---
+function exportFlexible(type) {
     const { p, s } = getTableContext();
-    if(!p) return showToast("Error", "No project data found!");
-
-    let portFilter = "";
-    $('input').each(function() {
-        if ($(this).attr('placeholder') && $(this).attr('placeholder').toLowerCase().includes('port')) {
-            portFilter = $(this).val().trim();
-        }
-    });
-
-    let portSuffix = portFilter ? `_port_${portFilter.replace(/[^a-z0-9]/gi, '_')}` : "_all";
-
-    let lines = getRows().map(n => {
+    const rows = getTargetRows();
+    let lines = [];
+    
+    rows.forEach(n => {
         const ip = $(n).data('ip');
         const port = $(n).data('port');
         
-        if(type === 'url') {
-            // No more filtering or guessing. 
-            // We force https:// for every target to ensure SSLScan has the correct URI format.
-            return `https://${ip}:${port}/`;
+        if (type === 'url') {
+            if (port) {
+                // Heuristic: if port 443/8443 use https, else http, or just output both for safety
+                lines.push(`http://${ip}:${port}`);
+                lines.push(`https://${ip}:${port}`);
+            } else {
+                lines.push(`http://${ip}`);
+                lines.push(`https://${ip}`);
+            }
+        } else {
+            lines.push(ip);
         }
-        return ip;
     });
 
-    if(type === 'ip') lines = [...new Set(lines)];
-
-    // We change the filename prefix to 'ssl_targets' if it's the URL format to keep things organized
-    let fname = type === 'url' ? `ssl${portSuffix}_targets.txt` : `ip${portSuffix}_targets.txt`;
-
+    // Unique only
+    lines = [...new Set(lines)];
+    const fname = `export_${type}_${Date.now()}.txt`;
+    
     fetch('/save_to_disk', { 
         method:'POST', 
         headers:{'Content-Type':'application/json'}, 
         body:JSON.stringify({project:p, subproject:s, filename:fname, ips:lines}) 
     })
-    .then(r=>r.json())
-    .then(d => { 
-        window.lastF = d.full_path; 
-        showToast("Success", `Saved: ${fname}`); 
-        if (typeof updateCmd === "function") updateCmd();
-    });
-}
-
-function processXlsx() {
-    const { p, s } = getTableContext();
-    const data = getRows().map(n => ({ ip:$(n).data('ip'), port:$(n).data('port'), os:n.cells[4].innerText.trim(), protocol:n.cells[6].innerText.trim(), service:n.cells[7].innerText.trim(), note:n.cells[8].innerText.trim() }));
-    const cols = []; $('.col-chk:checked').each(function(){ cols.push($(this).val()); });
-    fetch('/save_xlsx', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({project:p, subproject:s, rows:data, columns:cols, group_by_ip:$('#groupIPCheck').is(':checked')}) })
-    .then(() => { bootstrap.Modal.getInstance('#xlsxModal').hide(); showToast("Success", "Excel generated."); });
-}
-
-function generateCmd() { if(!window.lastF) return showToast("Error", "Save targets first!"); updateCmd(); new bootstrap.Modal('#cmdModal').show(); }
-
-// Add this new function for the eye icon
-function togglePassword() {
-    const passInput = document.getElementById('cmdPass');
-    const toggleIcon = document.getElementById('toggleIcon');
-    if (passInput.type === 'password') {
-        passInput.type = 'text';
-        toggleIcon.classList.replace('bi-eye', 'bi-eye-slash');
-    } else {
-        passInput.type = 'password';
-        toggleIcon.classList.replace('bi-eye-slash', 'bi-eye');
-    }
-}
-
-function updateCmd() {
-    const t = $('#toolType').val();
-    
-    if (!window.lastF) {
-        $('#cmdText').text("Please save targets first to generate path...");
-        return;
-    }
-
-    const fullPath = window.lastF; 
-    const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
-    const fileName = fullPath.split('/').pop();
-    const user = $('#cmdUser').val() || "''";
-    const pass = $('#cmdPass').val() || "''";
-    const domain = $('#cmdDomain').val() || ""; 
-    
-    let cmd = "";
-    const cdCmd = `cd "${dir}" && `;
-
-    // Logic: If tool is nxc_webdav, protocol is 'smb' but we append '-M webdav' later
-    let protocol = t.replace('nxc_', '');
-    if (t === 'nxc_webdav') protocol = 'smb';
-
-    //let nxcBase = `${cdCmd}nxc ${protocol} "${fullPath}" -u '${user}' -p '${pass}'`;
-    let nxcBase = `nxc ${protocol} "${fileName}" -u '${user}' -p '${pass}'`;
-    
-    if (domain.trim() !== "" && domain.trim() !== ".") {
-        nxcBase += ` -d '${domain}'`;
-    }
-
-    switch(t) {
-    	case 'sslscan':
-    	    // We look for 'ssl' in the filename to ensure the user used the correct export
-    	    if (!window.lastF.includes('ssl')) {
-    	        showToast("Format Warning", "Please Export > HTTP(S) Format first to generate the https:// prefixes.");
-    	        cmd = "# Error: Use HTTP(S) Export first";
-    	    } else {
-    	        // --get-certificate is often useful for artifacts to see the SAN and Issuer
-    	        cmd = `sslscan --targets=${fileName}`;
-    	    }
-    	    break;
-        case 'custom':
-            // Clears the preset and gives the pentester the directory context to start typing
-            cmd = "whoami"; // Default safe start
-            cmd = `${cdCmd}`;
-            break;
-        case 'gowitness':
-            cmd = `gowitness scan file -f "${fileName}" --screenshot-path "${dir}/gowitness" --threads 50`;
-            if(user !== "''") cmd += ` --auth-user '${user}' --auth-pass '${pass}'`;
-            break;
-        case 'nxc_webdav':
-            // SMB protocol with WebDAV module
-            cmd = `${nxcBase} -M webdav`;
-            break;
-        case 'nxc_rdp':
-            cmd = `${nxcBase} --nla-screenshot`;
-            break;
-        case 'nxc_smb':
-            cmd = `${nxcBase} --shares`;
-            break;
-        case 'nxc_mssql':
-            cmd = `${nxcBase} --databases`;
-            break;
-        case 'nxc_ldap':
-            cmd = `${nxcBase} --trusted-for-delegation --password-not-required`;
-            break;
-        default:
-            cmd = nxcBase;
-    }
-    
-    document.getElementById('cmdText').innerText = cmd;
-}
-
-function runCommand() {
-    // Capture manual edits from the editable div
-    const cmd = document.getElementById('cmdText').innerText.trim();
-    const runBtn = $('#runCmdBtn');
-
-    if (!cmd || cmd === "" || cmd.includes("Please save targets")) {
-        showToast("Error", "Command is empty!");
-        return;
-    }
-
-    if (!confirm("Initiate attack execution?")) return;
-
-    runBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> RUNNING...');
-
-    fetch('/execute_command', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: cmd })
-    })
     .then(r => r.json())
     .then(data => {
-        if (data.status === 'success') {
-            showToast("System", "Execution started!");
-            bootstrap.Modal.getInstance('#cmdModal').hide();
+        if(data.status === 'success') {
+            // Updated to show the info toast in the bottom right
+            showToast("Export Successful", `<i class="bi bi-file-earmark-text"></i> Raw ${type.toUpperCase()} list saved as: <strong>${fname}</strong>`);
         } else {
-            showToast("Error", data.message);
+            showToast("Export Error", "Could not save raw list to disk.");
         }
     })
-    .finally(() => {
-        runBtn.prop('disabled', false).html('<i class="bi bi-play-fill"></i> EXECUTE NOW');
-    });
+    .catch(err => showToast("Error", "Connection to backend failed."));
 }
 
-function executeAndCapture() {
-    // Capture manual edits from the editable div
-    const cmd = document.getElementById('cmdText').innerText.trim();
-    const tool = $('#toolType').val() || "manual_run";
-    const dir = window.lastF ? window.lastF.substring(0, window.lastF.lastIndexOf('/')) : null;
-    const pass = $('#cmdPass').val();
+// --- MODAL & EXECUTION ---
+function openCmdModal() {
+    if(getTargetRows().length === 0) return showToast("Warning", "No targets selected/visible.");
+    new bootstrap.Modal('#cmdModal').show();
+}
 
-    if (!dir || cmd === "") {
-        alert("Select project or fix command first!");
+function insertVar(v) {
+    const editableDiv = document.getElementById('cmdText');
+    const textToInsert = v + " ";
+    
+    // 1. Ensure the box is focused
+    editableDiv.focus();
+
+    // 2. Use the Selection API to insert at the caret
+    const sel = window.getSelection();
+    if (sel.getRangeAt && sel.rangeCount) {
+        let range = sel.getRangeAt(0);
+        
+        // Ensure the range is actually inside our command box
+        if (editableDiv.contains(range.commonAncestorContainer)) {
+            range.deleteContents();
+            
+            // Create a text node and insert it
+            const node = document.createTextNode(textToInsert);
+            range.insertNode(node);
+
+            // 3. Move caret to the end of the newly inserted text
+            range = range.cloneRange();
+            range.setStartAfter(node);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else {
+            // Fallback: If for some reason the selection is lost, append to end
+            editableDiv.innerText += " " + textToInsert;
+            placeCaretAtEnd(editableDiv);
+        }
+    }
+}
+
+function placeCaretAtEnd(el) {
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+// --- UPDATED BATCH EXECUTION ---
+async function executeBatch() {
+    // 1. Setup and Sanitize
+    const template = document.getElementById('cmdText').innerText.replace(/\u00a0/g, ' ').trim();
+    if(!template) return showToast("Error", "Command template is empty.");
+
+    // 2. Get Selected Rows using DataTables API
+    const selectedRows = table.rows().nodes().to$().filter(function() {
+        return $(this).find('.row-check').is(':checked');
+    });
+
+    const totalTargets = selectedRows.length;
+    if (totalTargets === 0) {
+        showToast("Selection Error", "No targets selected.");
         return;
     }
 
-    const $btn = $('.btn-outline-warning');
-    const originalContent = '<i class="bi bi-camera-reels"></i> RUN & SHOT';
-    $btn.html('<span class="spinner-border spinner-border-sm"></span> Capturing...').prop('disabled', true);
+    // 3. UI Preparation
+    const $btn = $('#runBatchBtn');
+    $('#jobPanel').slideDown();
+    $('#jobList').empty();
+    $('#jobCount').text(`0 / ${totalTargets}`).removeClass('text-success').addClass('text-info');
+    $btn.prop('disabled', true).html('<i class="bi bi-arrow-repeat spin"></i> RUNNING...');
 
-    showToast("System", `Initiating ${tool.toUpperCase()}... Screenshot will generate upon completion.`);
+    let completedCount = 0;
 
-    fetch('/execute_capture', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-        command: cmd, 
-        path: dir,
-        tool_type: tool,
-        password: $('#cmdPass').val() // Check this line!
-    })
-})
-    .then(r => r.json())
-    .then(data => {
-        if (data.status === 'success') {
-            showToast("Success", `Evidence saved: ${data.filename}`);
-        } else {
-            showToast("Error", data.message);
+    // 4. The Pipeline Loop
+    for (let i = 0; i < totalTargets; i++) {
+        const row = $(selectedRows[i]);
+        const jobId = `job-${i}`;
+        
+        const context = {
+            single_target: row.data('ip'),
+            port: row.data('port'),
+            protocol: $('#cmdProto').val(),
+            user: $('#cmdUser').val(),
+            password: $('#cmdPass').val(),
+            domain: $('#cmdDomain').val().trim(),
+            command: template,
+            project: $('#projectSelect').val() || "General",
+            subproject: $('#subProjectSelect').val() || "Default"
+        };
+
+        // Add to the visual list
+        $('#jobList').prepend(`
+            <div id="${jobId}" class="mb-1 text-white-50 d-flex justify-content-between">
+                <span>${context.single_target}</span> 
+                <span class="status text-warning"><i class="bi bi-hourglass-split"></i></span>
+            </div>
+        `);
+
+        try {
+            // We use your WORKING execute_capture route
+            const response = await fetch('/execute_capture', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(context)
+            });
+            
+            const res = await response.json();
+
+            if (res.status === 'success') {
+                $(`#${jobId} .status`).html('<i class="bi bi-check-lg text-success"></i>');
+                completedCount++;
+                // UPDATE THE COUNTER HERE
+                $('#jobCount').text(`${completedCount} / ${totalTargets}`);
+            } else {
+                $(`#${jobId} .status`).html('<i class="bi bi-exclamation-triangle text-warning"></i>');
+            }
+        } catch (e) {
+            $(`#${jobId} .status`).html('<i class="bi bi-bug text-danger"></i>');
         }
-    })
-    .catch(err => {
-        showToast("Critical", "Network error or backend timeout.");
-        console.error(err);
-    })
-    .finally(() => {
-        // 6. Reset UI State
-        $btn.html(originalContent).prop('disabled', false);
-    });
-}
+    }
 
-function copyCmd() {
-    const text = document.getElementById('cmdText').innerText;
-    navigator.clipboard.writeText(text);
-    showToast("Copied", "Command copied to clipboard.");
+    // 5. Wrap up
+    $('#jobCount').removeClass('text-info').addClass('text-success');
+    $btn.prop('disabled', false).html('<i class="bi bi-lightning-fill"></i> EXECUTE ON SELECTION');
+    showToast("Pipeline Complete", `Finished processing ${completedCount} targets.`);
 }
-
-function deleteRow(id) { if(confirm("Delete entry?")) fetch(`/delete_row/${id}`, { method: 'POST' }).then(() => { table.row($(`#row-${id}`)).remove().draw(); }); }
-function copyCmd() { navigator.clipboard.writeText($('#cmdText').text()); showToast("Copied", "Command copied to clipboard."); }
 </script>
+
 </body>
 </html>
+
