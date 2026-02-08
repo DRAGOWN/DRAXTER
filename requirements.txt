@@ -1,8 +1,8 @@
 Flask==3.0.3
 Flask-SQLAlchemy==3.1.1
 Flask-Login==0.6.3
-imgkit
-ansi2html
+imgkit==1.2.3
+ansi2html==1.9.2
 pandas>=2.2.2
 openpyxl==3.1.2
 SQLAlchemy>=2.0.36
