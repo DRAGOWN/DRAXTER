@@ -17,16 +17,19 @@
 8. Browse: https://localhost:5000 
 
 ### Requirements
-
+  Pip
 * Flask==3.0.3
 * Flask-SQLAlchemy==3.1.1
 * Flask-Login==0.6.3
-* imgkit
-* ansi2html
+* imgkit==1.2.3
+* ansi2html==1.9.2
 * pandas>=2.2.2
 * openpyxl==3.1.2
 * SQLAlchemy>=2.0.36
-* wkhtmltox_0.12.6.1 (with dpkg - requires privileges)
+  Deb
+* libssl1.1
+* wkhtmltox_0.12.6.1
+
 
 ### Steps
 
@@ -37,19 +40,24 @@
 5. Execute the selected command according your testing purposes
 
 ### Common Attacks:
+
 1. Auto screenshot a big list of HTTP(s) targets (thanks to gowitness)
-2. Auto screenshot a big list of RDP targets with NLA disabled (thanks to netexec)
+2. Auto screenshot a big list of RDP targets (thanks to netexec)
 3. Auto scan a big list of targets with the following service protocols:
 
-    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL
+   3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL, Redis, NFS, etc.
 
-### Improvements in v1.4
-* Improved terminal view (thanks to ansi2html)
-* Added custom command execution
-* Added sslscan
-* Improvements in gowitness target selection process
-* Now DRAXTER speaks in Nessus language:
-   Made DRAXTER compatible to Nessus XML output by the request of our intelligent users.
+### Export Targets:
+
+* Unique IP Export
+* HTTP(S) Targets Export
+* Customized Columns Export in XLSX 
+
+### Improvements in v1.5
+* Redesigned CMD Execution Windows
+* Terminal screenshot per connection
+* Added protocol enumeration tags
+* Moore targeted templates
 
 This is just a beginning 💥
 
