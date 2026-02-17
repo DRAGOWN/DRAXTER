@@ -17,7 +17,7 @@
 8. Browse: https://localhost:5000 
 
 ### Requirements
-  Pip
+Pip
 * Flask==3.0.3
 * Flask-SQLAlchemy==3.1.1
 * Flask-Login==0.6.3
@@ -27,7 +27,7 @@
 * openpyxl==3.1.2
 * SQLAlchemy>=2.0.36
   
-  Deb
+Deb
 * libssl1.1
 * wkhtmltox_0.12.6.1
 
