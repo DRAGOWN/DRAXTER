@@ -26,6 +26,7 @@
 * pandas>=2.2.2
 * openpyxl==3.1.2
 * SQLAlchemy>=2.0.36
+  
   Deb
 * libssl1.1
 * wkhtmltox_0.12.6.1
