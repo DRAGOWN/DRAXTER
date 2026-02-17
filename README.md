@@ -34,17 +34,16 @@ Deb
 
 ### Steps
 
-1. Upload XML format of nmap scan
+1. Upload XML format of nmap/nessus scan
 2. Filter by specific port(s) or (services)
 3. Export a file of the targets
 4. Select the specific attack
 5. Execute the selected command according your testing purposes
+6. Check generated screenshots and output information files in /browse.html page
 
 ### Common Attacks:
 
-1. Auto screenshot a big list of HTTP(s) targets (thanks to gowitness)
-2. Auto screenshot a big list of RDP targets (thanks to netexec)
-3. Auto scan a big list of targets with the following service protocols:
+1. Auto scan and screenshot a big list of targets with the following service protocols:
 
    3.1. SSH, WMI, SMB, HTTP, HTTPS, WebDAV, LDAP, RDP, VNC, MSSQL, NFS, WINRM, FTP, SSL, Redis, NFS, etc.
 
