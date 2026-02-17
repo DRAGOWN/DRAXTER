@@ -5,7 +5,7 @@
 <b> Draxter tool is used for managing a big list of IP addresses and ports for your pentest project.</b> It’s designed to take an XML scan input, filter targets by criteria (ports or services), and export or run selected actions against those targets to support your pentest workflow.
 
 ### Instalation & Execution
-❗❗❗ Compatible with Kali Linux using kali default user
+❗❗❗ Tested on Kali Linux
 
 1. `git clone https://github.com/DRAGOWN/DRAXTER.git`
 2. `cd DRAXTER`
